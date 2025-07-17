@@ -3,7 +3,6 @@
 import { auth } from "@/lib/auth/auth"
 import { connectDB } from "@/lib/db"
 import { User } from "@/lib/models"
-import { revalidatePath } from "next/cache"
 
 /**
  * Get user's progress for all courses
@@ -77,10 +76,6 @@ export async function completeLesson(
 
     await user.save()
 
-    // Revalidate relevant pages
-    revalidatePath(`/courses/${courseId}`)
-    revalidatePath(`/dashboard`)
-
     return { success: true, data: courseProgress, error: null }
   } catch (error) {
     console.error('Error completing lesson:', error)
@@ -126,10 +121,6 @@ export async function uncompleteLesson(
     )
 
     await user.save()
-
-    // Revalidate relevant pages
-    revalidatePath(`/courses/${courseId}`)
-    revalidatePath(`/dashboard`)
 
     return { success: true, data: courseProgress, error: null }
   } catch (error) {

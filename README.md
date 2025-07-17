@@ -127,12 +127,22 @@ project-vibe-it/
 
 ### Core Models
 
-- **User**: User accounts with progress tracking
+- **User**: User accounts with progress tracking and role-based permissions
 - **Course**: Learning paths with modules and lessons
 - **Module**: Course sections containing lessons
 - **Lesson**: Individual learning units with content
 - **ProjectSubmission**: Student project submissions
 - **Discussion**: Community discussions per lesson
+
+## 👥 User Roles & Permissions
+
+The platform implements a three-tier role system to support both learners and contributors:
+
+- **Student** (Default): Access courses, track progress, participate in community
+- **Contributor**: Create/edit content, moderate discussions, review projects
+- **Admin**: Full platform access, user management, analytics, system settings
+
+See [Roles & Permissions Guide](./docs/roles-and-permissions.md) for detailed information.
 
 ## 🎨 Design System
 
@@ -155,6 +165,10 @@ pnpm lint             # Run ESLint
 
 # Database
 pnpm seed             # Seed database with initial data
+
+# Role Management
+pnpm run create-admin      # Create an admin user
+pnpm run create-contributor # Create a contributor user
 ```
 
 ### Code Style
@@ -198,6 +212,7 @@ Our platform uses a **file-based content system** that makes it easy to add new 
 #### Documentation
 - 📖 [Content Contribution Guide](./docs/content-contribution.md) - Complete guide for contributors
 - ⚡ [Quick Start Guide](./docs/quick-start-guide.md) - Get started in minutes
+- 🚀 [Contributor Quick Start](./docs/contributor-quick-start.md) - Guide for new contributors
 - 📝 [Lesson Template](./docs/lesson-template.mdx) - Copy-paste template for new lessons
 
 #### Content Features
@@ -237,6 +252,8 @@ See our [Content Contribution Guide](./docs/content-contribution.md) for detaile
 - [Contributing Guide](./docs/contributing.md) - How to contribute
 - [Content Guidelines](./docs/content.md) - Writing lesson content
 - [API Documentation](./docs/api.md) - API endpoints reference
+- [Roles & Permissions](./docs/roles-and-permissions.md) - User roles and access control
+- [Admin Role Management](./docs/admin-role-management.md) - Guide for managing user roles
 
 ## 🚀 Deployment
 

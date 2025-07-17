@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MDXRenderer } from "@/components/mdx-renderer"
 import { LessonCompletion } from "@/components/lesson-completion"
+import { FloatingCompletionButton } from "@/components/floating-completion-button"
 import { 
   getLessonContent, 
   getLessonNavigation,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/content"
 import { auth } from "@/lib/auth/auth"
 import { getUserProgress } from "@/lib/progress-actions"
-import { isLessonCompleted } from "@/lib/progress"
+import { isLessonCompleted, calculateCourseProgress, getCompletedLessonsCount } from "@/lib/progress"
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -84,10 +85,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Button asChild variant="ghost" size="sm">
                 <Link href={`/courses/${courseSlug}`}>
                   <ChevronLeft className="w-4 h-4 mr-2" />
@@ -95,35 +96,20 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 </Link>
               </Button>
               <Separator orientation="vertical" className="h-6" />
-              <div className="text-sm text-slate-600 dark:text-slate-300">
-                <Link 
-                  href={`/courses/${courseSlug}`}
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
+              <div>
+                <div className="text-sm text-slate-600 dark:text-slate-400">
                   {course.title}
-                </Link>
-                <span className="mx-2">/</span>
-                <Link 
-                  href={`/courses/${courseSlug}/${moduleSlug}`}
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
+                </div>
+                <div className="font-medium text-slate-900 dark:text-white">
                   {module.title}
-                </Link>
-                <span className="mx-2">/</span>
-                <span className="text-slate-900 dark:text-white font-medium">
-                  {current.title}
-                </span>
+                </div>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="hover:bg-accent">
                 <MessageSquare className="w-4 h-4 mr-2" />
-                Discussion
-              </Button>
-              <Button variant="ghost" size="sm">
-                <BookOpen className="w-4 h-4 mr-2" />
-                Notes
+                Ask Question
               </Button>
             </div>
           </div>
@@ -163,20 +149,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
               <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
                 {current.description}
               </p>
-
-              {/* Lesson Actions */}
-              <div className="flex items-center gap-4">
-                <LessonCompletion
-                  courseId={courseSlug}
-                  moduleId={moduleSlug}
-                  lessonId={current.id}
-                  isCompleted={isCompleted}
-                />
-                <Button variant="outline" className="hover:bg-accent">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Ask Question
-                </Button>
-              </div>
             </div>
 
             {/* Lesson Content */}
@@ -213,11 +185,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                         Instructions:
                       </h4>
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <div dangerouslySetInnerHTML={{ 
-                          __html: meta.assignment.instructions
-                            .replace(/\n/g, '<br>')
-                            .replace(/- (.*)/g, '• $1')
-                        }} />
+                        <MDXRenderer source={meta.assignment.instructions} />
                       </div>
                     </div>
 
@@ -284,6 +252,29 @@ export default async function LessonPage({ params }: LessonPageProps) {
               </Card>
             )}
 
+            {/* Lesson Completion - Moved to bottom */}
+            <div className="mt-8">
+              <LessonCompletion
+                courseSlug={courseSlug}
+                moduleSlug={moduleSlug}
+                lessonId={current.id}
+                lessonTitle={current.title}
+                isCompleted={isCompleted}
+                previousLesson={previous ? { 
+                  slug: previous.slug, 
+                  title: previous.title,
+                  moduleSlug: (previous as any).moduleSlug || moduleSlug
+                } : null}
+                nextLesson={next ? { 
+                  slug: next.slug, 
+                  title: next.title,
+                  moduleSlug: (next as any).moduleSlug || moduleSlug
+                } : null}
+                moduleTitle={module.title}
+                courseTitle={course.title}
+              />
+            </div>
+
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8">
               <Button 
@@ -291,14 +282,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 variant="outline" 
                 disabled={!previous}
               >
-                <Link href={previous ? `/courses/${courseSlug}/${moduleSlug}/${previous.slug}` : "#"}>
+                <Link href={previous ? `/courses/${courseSlug}/${(previous as any).moduleSlug || moduleSlug}/${previous.slug}` : "#"}>
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   Previous Lesson
                 </Link>
               </Button>
               
               <Button asChild disabled={!next}>
-                <Link href={next ? `/courses/${courseSlug}/${moduleSlug}/${next.slug}` : "#"}>
+                <Link href={next ? `/courses/${courseSlug}/${(next as any).moduleSlug || moduleSlug}/${next.slug}` : "#"}>
                   Next Lesson
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Link>
@@ -318,14 +309,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   <div className="space-y-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        15%
+                        {calculateCourseProgress(userProgress, courseSlug, course.modules.reduce((acc, m) => acc + m.lessons.length, 0))}%
                       </div>
                       <div className="text-sm text-slate-600 dark:text-slate-400">
                         Course Complete
                       </div>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: '15%' }}></div>
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                        style={{ 
+                          width: `${calculateCourseProgress(userProgress, courseSlug, course.modules.reduce((acc, m) => acc + m.lessons.length, 0))}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <div className="text-center text-sm text-slate-600 dark:text-slate-400">
+                      {getCompletedLessonsCount(userProgress, courseSlug)} of {course.modules.reduce((acc, m) => acc + m.lessons.length, 0)} lessons completed
                     </div>
                   </div>
                 </CardContent>
@@ -339,51 +338,37 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {module.lessons.map((lesson, index) => (
-                      <Link
-                        key={lesson.id}
-                        href={`/courses/${courseSlug}/${moduleSlug}/${lesson.slug}`}
-                        className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                          lesson.slug === current.slug
-                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        {lesson.slug === current.slug ? (
-                          <CheckCircle className="w-4 h-4 text-blue-600" />
-                        ) : index < 2 ? (
-                          <Circle className="w-4 h-4 text-slate-400" />
-                        ) : (
-                          <Lock className="w-4 h-4 text-slate-400" />
-                        )}
-                        <span className="text-sm font-medium">
-                          {lesson.title}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card className="border-0 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Github className="w-4 h-4 mr-2" />
-                      View Code
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Discussion
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Take Notes
-                    </Button>
+                    {module.lessons.map((lesson, index) => {
+                      const lessonCompleted = isLessonCompleted(userProgress, courseSlug, lesson.id)
+                      const isCurrentLesson = lesson.slug === current.slug
+                      
+                      return (
+                        <Link
+                          key={lesson.id}
+                          href={`/courses/${courseSlug}/${moduleSlug}/${lesson.slug}`}
+                          className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                            isCurrentLesson
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                              : lessonCompleted
+                              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {isCurrentLesson ? (
+                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                          ) : lessonCompleted ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : index < 2 ? (
+                            <Circle className="w-4 h-4 text-slate-400" />
+                          ) : (
+                            <Lock className="w-4 h-4 text-slate-400" />
+                          )}
+                          <span className="text-sm font-medium">
+                            {lesson.title}
+                          </span>
+                        </Link>
+                      )
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -391,6 +376,19 @@ export default async function LessonPage({ params }: LessonPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button for Quick Completion */}
+      <FloatingCompletionButton
+        courseSlug={courseSlug}
+        moduleSlug={moduleSlug}
+        lessonId={current.id}
+        isCompleted={isCompleted}
+        nextLesson={next ? { 
+          slug: next.slug, 
+          title: next.title,
+          moduleSlug: (next as any).moduleSlug || moduleSlug
+        } : null}
+      />
     </div>
   )
 } 

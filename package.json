@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
-    "validate-content": "node scripts/validate-content.js"
+    "validate-content": "node scripts/validate-content.js",
+    "create-admin": "tsx scripts/create-admin.ts",
+    "create-contributor": "tsx scripts/create-contributor.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.10.0",
@@ -28,6 +30,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.0",
     "lucide-react": "^0.503.0",

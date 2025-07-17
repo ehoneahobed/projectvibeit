@@ -168,7 +168,7 @@ export function getModuleContent(courseSlug: string, moduleSlug: string) {
 }
 
 /**
- * Get navigation data for a lesson (previous/next)
+ * Get navigation data for a lesson (previous/next) with cross-module support
  */
 export function getLessonNavigation(
   courseSlug: string,
@@ -185,8 +185,50 @@ export function getLessonNavigation(
   if (currentLessonIndex === -1) return null
 
   const currentLesson = module.lessons[currentLessonIndex]
-  const previousLesson = currentLessonIndex > 0 ? module.lessons[currentLessonIndex - 1] : null
-  const nextLesson = currentLessonIndex < module.lessons.length - 1 ? module.lessons[currentLessonIndex + 1] : null
+  
+  // Find previous lesson (within same module or from previous module)
+  let previousLesson = null
+  if (currentLessonIndex > 0) {
+    // Previous lesson in same module
+    previousLesson = {
+      ...module.lessons[currentLessonIndex - 1],
+      moduleSlug: module.slug
+    }
+  } else {
+    // Look for last lesson in previous module
+    const currentModuleIndex = course.modules.findIndex(m => m.slug === moduleSlug)
+    if (currentModuleIndex > 0) {
+      const previousModule = course.modules[currentModuleIndex - 1]
+      if (previousModule.lessons.length > 0) {
+        previousLesson = {
+          ...previousModule.lessons[previousModule.lessons.length - 1],
+          moduleSlug: previousModule.slug
+        }
+      }
+    }
+  }
+
+  // Find next lesson (within same module or from next module)
+  let nextLesson = null
+  if (currentLessonIndex < module.lessons.length - 1) {
+    // Next lesson in same module
+    nextLesson = {
+      ...module.lessons[currentLessonIndex + 1],
+      moduleSlug: module.slug
+    }
+  } else {
+    // Look for first lesson in next module
+    const currentModuleIndex = course.modules.findIndex(m => m.slug === moduleSlug)
+    if (currentModuleIndex < course.modules.length - 1) {
+      const nextModule = course.modules[currentModuleIndex + 1]
+      if (nextModule.lessons.length > 0) {
+        nextLesson = {
+          ...nextModule.lessons[0],
+          moduleSlug: nextModule.slug
+        }
+      }
+    }
+  }
 
   return {
     current: currentLesson,
