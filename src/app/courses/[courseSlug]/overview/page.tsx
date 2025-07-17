@@ -4,7 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCourseBySlug } from "@/lib/content"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
+import { auth } from "@/lib/auth/auth"
+import { getUserProgress } from "@/lib/progress-actions"
+import { calculateCourseProgress, getCompletedLessonsCount } from "@/lib/progress"
 import { 
   BookOpen, 
   Clock, 
@@ -32,16 +35,31 @@ interface CourseOverviewProps {
 export default async function CourseOverview({ params }: CourseOverviewProps) {
   const { courseSlug } = await params
   
+  // Check authentication
+  const session = await auth()
+  if (!session?.user) {
+    // Redirect to login instead of showing 404
+    redirect('/auth/signin?callbackUrl=' + encodeURIComponent(`/courses/${courseSlug}/overview`))
+  }
+  
   const course = getCourseBySlug(courseSlug)
   
   if (!course) {
     notFound()
   }
 
+  // Get user progress
+  const progressResult = await getUserProgress()
+  const userProgress = progressResult.success ? progressResult.data : []
+  
   const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
   const totalProjects = course.modules.reduce((acc, module) => 
     acc + module.lessons.filter(lesson => lesson.type === 'project').length, 0
   )
+  
+  // Calculate real progress
+  const completedLessons = getCompletedLessonsCount(userProgress, course.slug)
+  const courseProgress = calculateCourseProgress(userProgress, course.slug, totalLessons)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -132,6 +150,30 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                       {course.estimatedHours}h
                     </div>
                     <div className="text-sm text-slate-600 dark:text-slate-300">Duration</div>
+                  </div>
+                </div>
+
+                {/* Your Progress */}
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6 mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      Your Progress
+                    </h3>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      {completedLessons}/{totalLessons} lessons completed
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3">
+                    <div 
+                      className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
+                      style={{ width: `${courseProgress}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-center mt-2">
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {courseProgress}%
+                    </span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">Complete</span>
                   </div>
                 </div>
               </div>
@@ -411,7 +453,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <span className="text-white font-bold text-xl">V</span>
                   </div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Vibe Coding Team</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Project Vibe It Team</h4>
                   <p className="text-sm text-slate-600 dark:text-slate-300">
                     Professional developers and educators
                   </p>

@@ -4,7 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { getCourseBySlug } from "@/lib/content"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
+import { auth } from "@/lib/auth/auth"
+import { getUserProgress } from "@/lib/progress-actions"
+import { 
+  calculateCourseProgress, 
+  getCompletedLessonsCount, 
+  calculateModuleProgress,
+  isLessonCompleted,
+  canAccessLesson
+} from "@/lib/progress"
 import { 
   BookOpen, 
   Clock, 
@@ -26,144 +35,113 @@ interface CoursePageProps {
 export default async function CoursePage({ params }: CoursePageProps) {
   const { courseSlug } = await params
   
+  // Check authentication
+  const session = await auth()
+  if (!session?.user) {
+    // Redirect to login instead of showing 404
+    redirect('/auth/signin?callbackUrl=' + encodeURIComponent(`/courses/${courseSlug}`))
+  }
+  
   const course = getCourseBySlug(courseSlug)
   
   if (!course) {
     notFound()
   }
 
+  // Get user progress
+  const progressResult = await getUserProgress()
+  const userProgress = progressResult.success ? progressResult.data : []
+  
+  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
+  const completedLessons = getCompletedLessonsCount(userProgress, course.slug)
+  const courseProgress = calculateCourseProgress(userProgress, course.slug, totalLessons)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Course Header */}
+      {/* Hero Section */}
       <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Course Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
-                <Badge variant="secondary">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Course
-                </Badge>
-                <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                  <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
-                  {course.rating}
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <Badge variant="secondary">
+                <BookOpen className="w-4 h-4 mr-2" />
+                {course.modules.length} Modules
+              </Badge>
+              <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
+                {course.rating || 4.5}
               </div>
-              
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
-                {course.title}
-              </h1>
-              
-              <p className="text-xl text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                {course.description}
-              </p>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6">
+              {course.title}
+            </h1>
+            
+            <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+              {course.description}
+            </p>
 
-              {/* Course Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {course.modules.length}
-                  </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-300">Modules</div>
+            {/* Course Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {course.modules.length}
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {course.modules.reduce((acc, module) => acc + module.lessons.length, 0)}
-                  </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-300">Lessons</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {course.estimatedHours}h
-                  </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-300">Duration</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                    {(course.students || 0).toLocaleString()}
-                  </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-300">Students</div>
-                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Modules</div>
               </div>
-
-              {/* Progress Bar */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Your Progress
-                  </span>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    15%
-                  </span>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {totalLessons}
                 </div>
-                <Progress value={15} className="h-2" />
+                <div className="text-sm text-slate-600 dark:text-slate-300">Lessons</div>
               </div>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="text-lg px-8 py-6">
-                  <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].id}`}>
-                    Continue Learning
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
-                  <Link href={`/courses/${course.slug}/overview`}>
-                    Course Overview
-                  </Link>
-                </Button>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {course.estimatedHours}h
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Duration</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {(course.students || 0).toLocaleString()}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Students</div>
               </div>
             </div>
 
-            {/* Course Preview Card */}
-            <div className="lg:w-80">
-              <Card className="border-0 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="text-xl">Course Preview</CardTitle>
-                  <CardDescription>
-                    Get a taste of what you'll learn
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-slate-900 dark:text-white">What you'll learn:</h4>
-                    <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                      <li className="flex items-start">
-                        <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                        Modern JavaScript and ES6+ features
-                      </li>
-                      <li className="flex items-start">
-                        <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                        React fundamentals and hooks
-                      </li>
-                      <li className="flex items-start">
-                        <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                        Next.js and modern tooling
-                      </li>
-                      <li className="flex items-start">
-                        <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                        Database design and APIs
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <Button asChild className="w-full">
-                      <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].id}`}>
-                        <Play className="w-4 h-4 mr-2" />
-                        Start Learning
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Progress Bar */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Your Progress
+                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  {completedLessons}/{totalLessons} lessons completed
+                </span>
+              </div>
+              <Progress value={courseProgress} className="h-2" />
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg" className="text-lg px-8 py-4">
+                <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].id}`}>
+                  <Play className="w-5 h-5 mr-2" />
+                  Continue Learning
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="text-lg px-8 py-4">
+                <Link href={`/courses/${courseSlug}/overview`}>
+                  <BookOpen className="w-5 h-5 mr-2" />
+                  Course Overview
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Modules Section */}
+      {/* Course Modules */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
@@ -176,94 +154,98 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
 
           <div className="space-y-6">
-            {course.modules.map((module, index) => (
-              <Card key={module.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-2">
-                        <Badge variant="secondary">
-                          Module {module.order}
-                        </Badge>
-                        <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                          <Clock className="w-4 h-4 mr-1" />
-                          {Math.round((module.lessons.length * 2.5))} min
-                        </div>
-                      </div>
-                      <CardTitle className="text-2xl mb-2">
-                        {module.title}
-                      </CardTitle>
-                      <CardDescription className="text-base">
-                        {module.description}
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                        0/{module.lessons.length} completed
-                      </div>
-                      <Progress value={0} className="w-24 h-2" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {module.lessons.map((lesson, lessonIndex) => {
-                      const isCompleted = false // TODO: Get from user progress
-                      const isFirstLesson = lessonIndex === 0
-                      const isPreviousCompleted = lessonIndex === 0 || false // TODO: Get from user progress
-                      const canAccess = isFirstLesson || isPreviousCompleted
+            {course.modules.map((module, index) => {
+              const moduleLessonIds = module.lessons.map(lesson => lesson.id)
+              const moduleProgress = calculateModuleProgress(userProgress, course.slug, moduleLessonIds)
+              const completedModuleLessons = module.lessons.filter(lesson => 
+                isLessonCompleted(userProgress, course.slug, lesson.id)
+              ).length
 
-                      return (
-                        <div
-                          key={lesson.id}
-                          className={`flex items-center gap-4 p-3 rounded-lg transition-colors ${
-                            canAccess 
-                              ? 'hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' 
-                              : 'opacity-50 cursor-not-allowed'
-                          }`}
-                        >
-                          <div className="flex-shrink-0">
-                            {isCompleted ? (
-                              <CheckCircle className="w-5 h-5 text-green-500" />
-                            ) : canAccess ? (
-                              <Circle className="w-5 h-5 text-slate-400" />
-                            ) : (
-                              <Lock className="w-5 h-5 text-slate-400" />
-                            )}
+              return (
+                <Card key={module.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4 mb-2">
+                          <Badge variant="secondary">
+                            Module {module.order}
+                          </Badge>
+                          <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {Math.round((module.lessons.length * 2.5))} min
                           </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-slate-900 dark:text-white">
-                                {lesson.title}
-                              </span>
-                              {lesson.type === 'project' && (
-                                <Badge variant="outline" className="text-xs">
-                                  Project
-                                </Badge>
+                        </div>
+                        <CardTitle className="text-2xl mb-2">
+                          {module.title}
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                          {module.description}
+                        </CardDescription>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                          {completedModuleLessons}/{module.lessons.length} completed
+                        </div>
+                        <Progress value={moduleProgress} className="w-24 h-2" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {module.lessons.map((lesson, lessonIndex) => {
+                        const isCompleted = isLessonCompleted(userProgress, course.slug, lesson.id)
+                        const canAccess = canAccessLesson(userProgress, course.slug, lessonIndex, moduleLessonIds)
+
+                        return (
+                          <div
+                            key={lesson.id}
+                            className={`flex items-center gap-4 p-3 rounded-lg transition-colors ${
+                              canAccess 
+                                ? 'hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' 
+                                : 'opacity-50 cursor-not-allowed'
+                            }`}
+                          >
+                            <div className="flex-shrink-0">
+                              {isCompleted ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : canAccess ? (
+                                <Circle className="w-5 h-5 text-slate-400" />
+                              ) : (
+                                <Lock className="w-5 h-5 text-slate-400" />
                               )}
                             </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-slate-900 dark:text-white">
+                                  {lesson.title}
+                                </span>
+                                {lesson.type === 'project' && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Project
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-slate-600 dark:text-slate-300">
+                                {lesson.description}
+                              </p>
+                            </div>
+                            
+                            {canAccess && (
+                              <Button asChild size="sm" variant="ghost">
+                                <Link href={`/courses/${course.slug}/${module.slug}/${lesson.slug}`}>
+                                  <ArrowRight className="w-4 h-4" />
+                                </Link>
+                              </Button>
+                            )}
                           </div>
-
-                          {canAccess && (
-                            <Button
-                              asChild
-                              variant="ghost"
-                              size="sm"
-                              className="flex-shrink-0"
-                            >
-                              <Link href={`/courses/${course.slug}/${module.slug}/${lesson.id}`}>
-                                <Play className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
       </section>

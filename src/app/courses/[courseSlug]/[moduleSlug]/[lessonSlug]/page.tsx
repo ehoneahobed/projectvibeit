@@ -4,11 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MDXRenderer } from "@/components/mdx-renderer"
+import { LessonCompletion } from "@/components/lesson-completion"
 import { 
   getLessonContent, 
   getLessonNavigation,
   getPublishedCourses 
 } from "@/lib/content"
+import { auth } from "@/lib/auth/auth"
+import { getUserProgress } from "@/lib/progress-actions"
+import { isLessonCompleted } from "@/lib/progress"
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -26,7 +30,7 @@ import {
   Video,
   Book
 } from "lucide-react"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 interface LessonPageProps {
   params: Promise<{
@@ -39,6 +43,13 @@ interface LessonPageProps {
 export default async function LessonPage({ params }: LessonPageProps) {
   const { courseSlug, moduleSlug, lessonSlug } = await params
   
+  // Check authentication
+  const session = await auth()
+  if (!session?.user) {
+    // Redirect to login instead of showing 404
+    redirect('/auth/signin?callbackUrl=' + encodeURIComponent(`/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`))
+  }
+  
   // Load lesson content from MDX files
   const lessonContent = getLessonContent(courseSlug, moduleSlug, lessonSlug)
   const navigation = getLessonNavigation(courseSlug, moduleSlug, lessonSlug)
@@ -49,6 +60,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   const { meta, content } = lessonContent
   const { current, previous, next, module, course } = navigation
+
+  // Get user progress
+  const progressResult = await getUserProgress()
+  const userProgress = progressResult.success ? progressResult.data : []
+  const isCompleted = isLessonCompleted(userProgress, courseSlug, current.id)
 
   const getResourceIcon = (type: string) => {
     switch (type) {
@@ -132,6 +148,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 <Badge variant="outline" className="text-sm">
                   Module {module.order}
                 </Badge>
+                {isCompleted && (
+                  <Badge variant="default" className="text-sm bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Completed
+                  </Badge>
+                )}
               </div>
               
               <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
@@ -144,10 +166,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
               {/* Lesson Actions */}
               <div className="flex items-center gap-4">
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Mark as Complete
-                </Button>
+                <LessonCompletion
+                  courseId={courseSlug}
+                  moduleId={moduleSlug}
+                  lessonId={current.id}
+                  isCompleted={isCompleted}
+                />
                 <Button variant="outline" className="hover:bg-accent">
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Ask Question

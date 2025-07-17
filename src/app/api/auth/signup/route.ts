@@ -51,21 +51,24 @@ export async function POST(request: NextRequest) {
 
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}`
 
-    const { error } = await sendEmail({
-      to: email,
-      subject: "Verify your email",
-      react: VerificationEmail({
-        verificationUrl,
-        unsubscribeUrl: "#",
-      }),
-    })
+    // Try to send verification email, but don't fail signup if it fails
+    try {
+      const { error } = await sendEmail({
+        to: email,
+        subject: "Verify your email",
+        react: VerificationEmail({
+          verificationUrl,
+          unsubscribeUrl: "#",
+        }),
+      })
 
-    if (error) {
-      logger.error(error, "Failed to send verification email")
-      return NextResponse.json(
-        { error: "Failed to send verification email" },
-        { status: 500 }
-      )
+      if (error) {
+        logger.warn(error, "Failed to send verification email, but user was created successfully")
+      } else {
+        logger.info("Verification email sent successfully")
+      }
+    } catch (emailError) {
+      logger.warn(emailError, "Failed to send verification email, but user was created successfully")
     }
 
     logger.info("User created successfully")

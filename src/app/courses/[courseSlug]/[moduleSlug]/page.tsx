@@ -2,27 +2,36 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
+import { getCourseBySlug } from "@/lib/content"
+import { notFound, redirect } from "next/navigation"
+import { auth } from "@/lib/auth/auth"
+import { getUserProgress } from "@/lib/progress-actions"
 import { 
-  getCourseBySlug, 
-  getModuleContent 
-} from "@/lib/content"
-import { notFound } from "next/navigation"
+  calculateModuleProgress, 
+  getCompletedModuleLessonsCount,
+  isLessonCompleted,
+  canAccessLesson
+} from "@/lib/progress"
 import { 
   BookOpen, 
   Clock, 
+  Users, 
   CheckCircle, 
   Circle, 
   ArrowRight, 
-  ChevronLeft,
+  Star,
   Play,
   Lock,
+  Target,
+  Award,
   Code,
   FileText,
-  Target,
-  Award
+  Lightbulb,
+  MessageSquare,
+  ChevronLeft
 } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
 
 interface ModulePageProps {
   params: Promise<{
@@ -34,6 +43,13 @@ interface ModulePageProps {
 export default async function ModulePage({ params }: ModulePageProps) {
   const { courseSlug, moduleSlug } = await params
   
+  // Check authentication
+  const session = await auth()
+  if (!session?.user) {
+    // Redirect to login instead of showing 404
+    redirect('/auth/signin?callbackUrl=' + encodeURIComponent(`/courses/${courseSlug}/${moduleSlug}`))
+  }
+  
   const course = getCourseBySlug(courseSlug)
   if (!course) {
     notFound()
@@ -44,10 +60,15 @@ export default async function ModulePage({ params }: ModulePageProps) {
     notFound()
   }
 
+  // Get user progress
+  const progressResult = await getUserProgress()
+  const userProgress = progressResult.success ? progressResult.data : []
+  
   const totalLessons = module.lessons.length
   const totalProjects = module.lessons.filter(lesson => lesson.type === 'project').length
-  const completedLessons = 0 // TODO: Get from user progress
-  const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+  const moduleLessonIds = module.lessons.map(lesson => lesson.id)
+  const completedLessons = getCompletedModuleLessonsCount(userProgress, courseSlug, moduleLessonIds)
+  const progressPercentage = calculateModuleProgress(userProgress, courseSlug, moduleLessonIds)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -90,8 +111,8 @@ export default async function ModulePage({ params }: ModulePageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Module Header */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* Module Introduction */}
             <section>
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8">
                 <div className="flex items-center gap-4 mb-6">
@@ -100,8 +121,8 @@ export default async function ModulePage({ params }: ModulePageProps) {
                     Module {module.order}
                   </Badge>
                   <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {module.estimatedHours}h
+                    <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
+                    {course.rating || 4.5}
                   </div>
                 </div>
                 
@@ -153,38 +174,70 @@ export default async function ModulePage({ params }: ModulePageProps) {
             {/* Learning Objectives */}
             <section>
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-8">
                   <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    What You'll Learn
+                    Learning Objectives
                   </h2>
                 </div>
                 
-                <div className="space-y-4">
-                  {module.lessons.map((lesson, index) => (
-                    <div key={lesson.id} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-1">
-                        {lesson.type === 'project' ? (
-                          <Code className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        ) : (
-                          <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        )}
-                      </div>
-                      <div className="flex-1">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div>
                         <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
-                          {lesson.title}
+                          Understand Core Concepts
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-slate-300">
-                          {lesson.description}
+                          Master the fundamental concepts and principles covered in this module
                         </p>
                       </div>
                     </div>
-                  ))}
+                    
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+                          Apply Practical Skills
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          Practice and apply the skills through hands-on exercises and projects
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+                          Build Real Projects
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          Create portfolio-worthy projects that demonstrate your understanding
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+                          Prepare for Next Module
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          Build a strong foundation for the next module in your learning journey
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* Lessons List */}
+            {/* Module Lessons */}
             <section>
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8">
                 <div className="flex items-center gap-3 mb-8">
@@ -196,62 +249,68 @@ export default async function ModulePage({ params }: ModulePageProps) {
                 
                 <div className="space-y-4">
                   {module.lessons.map((lesson, index) => {
-                    const isCompleted = false // TODO: Get from user progress
-                    const isFirstLesson = index === 0
-                    const isPreviousCompleted = index === 0 || false // TODO: Get from user progress
-                    const canAccess = isFirstLesson || isPreviousCompleted
+                    const isCompleted = isLessonCompleted(userProgress, courseSlug, lesson.id)
+                    const canAccess = canAccessLesson(userProgress, courseSlug, index, moduleLessonIds)
 
                     return (
                       <div
                         key={lesson.id}
-                        className={`border border-slate-200 dark:border-slate-700 rounded-lg p-6 transition-colors ${
+                        className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
                           canAccess 
-                            ? 'hover:bg-slate-50 dark:hover:bg-slate-700' 
-                            : 'opacity-50'
+                            ? 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700' 
+                            : 'border-slate-200 dark:border-slate-700 opacity-50'
                         }`}
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-4 flex-1">
-                            <div className="flex-shrink-0 mt-1">
-                              {isCompleted ? (
-                                <CheckCircle className="w-6 h-6 text-green-500" />
-                              ) : canAccess ? (
-                                <Circle className="w-6 h-6 text-slate-400" />
-                              ) : (
-                                <Lock className="w-6 h-6 text-slate-400" />
-                              )}
-                            </div>
-                            
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                                  {lesson.title}
-                                </h3>
-                                <Badge variant="outline" className="text-xs">
-                                  {lesson.type === 'project' ? 'Project' : 'Lesson'}
-                                </Badge>
-                              </div>
-                              <p className="text-slate-600 dark:text-slate-300 mb-4">
-                                {lesson.description}
-                              </p>
-                              
-                              {canAccess && (
-                                <Button asChild size="sm">
-                                  <Link href={`/courses/${courseSlug}/${moduleSlug}/${lesson.slug}`}>
-                                    {isCompleted ? 'Review' : 'Start Lesson'}
-                                    <ArrowRight className="w-4 h-4 ml-2" />
-                                  </Link>
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="text-right">
-                            <div className="text-sm text-slate-500 dark:text-slate-400">
-                              Lesson {lesson.order}
-                            </div>
-                          </div>
+                        <div className="flex-shrink-0">
+                          {isCompleted ? (
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                          ) : canAccess ? (
+                            <Circle className="w-6 h-6 text-slate-400" />
+                          ) : (
+                            <Lock className="w-6 h-6 text-slate-400" />
+                          )}
                         </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {lesson.title}
+                            </span>
+                            {lesson.type === 'project' && (
+                              <Badge variant="outline" className="text-xs">
+                                <Code className="w-3 h-3 mr-1" />
+                                Project
+                              </Badge>
+                            )}
+                            {isCompleted && (
+                              <Badge variant="default" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Completed
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">
+                            {lesson.description}
+                          </p>
+                        </div>
+                        
+                        {canAccess && (
+                          <Button asChild size="sm">
+                            <Link href={`/courses/${courseSlug}/${moduleSlug}/${lesson.slug}`}>
+                              {isCompleted ? (
+                                <>
+                                  <FileText className="w-4 h-4 mr-2" />
+                                  Review
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="w-4 h-4 mr-2" />
+                                  Start
+                                </>
+                              )}
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                     )
                   })}
@@ -307,86 +366,79 @@ export default async function ModulePage({ params }: ModulePageProps) {
               <CardHeader>
                 <CardTitle className="text-xl">Course Navigation</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  {course.modules.map((courseModule) => (
-                    <div
-                      key={courseModule.id}
-                      className={`p-3 rounded-lg transition-colors ${
-                        courseModule.slug === moduleSlug
-                          ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      <Link 
-                        href={`/courses/${courseSlug}/${courseModule.slug}`}
-                        className={`block ${
-                          courseModule.slug === moduleSlug
-                            ? 'text-blue-700 dark:text-blue-300'
-                            : 'text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="text-xs">
-                            {courseModule.order}
-                          </Badge>
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">
-                              {courseModule.title}
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                              {courseModule.lessons.length} lessons
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                  <Link 
+                    href={`/courses/${courseSlug}`}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">
+                        Course Overview
+                      </div>
+                      <div className="text-sm text-slate-600 dark:text-slate-300">
+                        {course.title}
+                      </div>
                     </div>
-                  ))}
-                </div>
-                
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href={`/courses/${courseSlug}/overview`}>
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Course Overview
-                    </Link>
-                  </Button>
+                  </Link>
+                  
+                  <Link 
+                    href={`/courses/${courseSlug}/overview`}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <Target className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">
+                        Course Details
+                      </div>
+                      <div className="text-sm text-slate-600 dark:text-slate-300">
+                        Prerequisites & curriculum
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Module Features */}
+            {/* Tips */}
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-xl">Module Features</CardTitle>
+                <CardTitle className="text-xl">Learning Tips</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-blue-500" />
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Theory Lessons</h4>
+                    <h4 className="font-medium text-slate-900 dark:text-white mb-1">
+                      Take Your Time
+                    </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      {module.lessons.filter(l => l.type === 'lesson').length} lessons
+                      Don't rush through the lessons. Take time to understand each concept.
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <Code className="w-5 h-5 text-purple-500" />
+                <div className="flex items-start gap-3">
+                  <Code className="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Hands-On Projects</h4>
+                    <h4 className="font-medium text-slate-900 dark:text-white mb-1">
+                      Practice Regularly
+                    </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      {totalProjects} projects
+                      Practice the concepts you learn to reinforce your understanding.
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-green-500" />
+                <div className="flex items-start gap-3">
+                  <MessageSquare className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Estimated Time</h4>
+                    <h4 className="font-medium text-slate-900 dark:text-white mb-1">
+                      Ask Questions
+                    </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      {module.estimatedHours} hours
+                      Don't hesitate to ask questions in the discussion section.
                     </p>
                   </div>
                 </div>

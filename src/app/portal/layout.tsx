@@ -94,7 +94,7 @@ export default function PortalLayout({
             >
               <Package2 className="h-6 w-6" />
               <span className={cn(isCollapsed && "hidden")}>
-                Auth Boilerplate
+                Project Vibe It
               </span>
             </Link>
           </div>
@@ -243,7 +243,7 @@ export default function PortalLayout({
                     className="group bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold md:text-base"
                   >
                     <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-                    <span className="sr-only">Auth Boilerplate</span>
+                    <span className="sr-only">Project Vibe It</span>
                   </Link>
                   {menuItems.map((item) => (
                     <React.Fragment key={item.label}>
