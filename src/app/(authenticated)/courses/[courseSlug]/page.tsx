@@ -17,7 +17,6 @@ import {
 import { 
   BookOpen, 
   Clock, 
-  Users, 
   CheckCircle, 
   Circle, 
   ArrowRight, 
@@ -125,7 +124,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="text-lg px-8 py-4">
-                <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].id}`}>
+                <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].slug}`}>
                   <Play className="w-5 h-5 mr-2" />
                   Continue Learning
                 </Link>
@@ -154,15 +153,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
 
           <div className="space-y-6">
-            {course.modules.map((module, index) => {
-              const moduleLessonIds = module.lessons.map(lesson => lesson.id)
+            {course.modules.map((module) => {
+              const moduleLessonIds = module.lessons.map(lesson => lesson.slug)
               const moduleProgress = calculateModuleProgress(userProgress, course.slug, moduleLessonIds)
               const completedModuleLessons = module.lessons.filter(lesson => 
-                isLessonCompleted(userProgress, course.slug, lesson.id)
+                isLessonCompleted(userProgress, course.slug, lesson.slug)
               ).length
 
               return (
-                <Card key={module.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                <Card key={module.slug} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -193,12 +192,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <CardContent>
                     <div className="space-y-3">
                       {module.lessons.map((lesson, lessonIndex) => {
-                        const isCompleted = isLessonCompleted(userProgress, course.slug, lesson.id)
+                        const isCompleted = isLessonCompleted(userProgress, course.slug, lesson.slug)
                         const canAccess = canAccessLesson(userProgress, course.slug, lessonIndex, moduleLessonIds)
 
                         return (
                           <div
-                            key={lesson.id}
+                            key={lesson.slug}
                             className={`flex items-center gap-4 p-3 rounded-lg transition-colors ${
                               canAccess 
                                 ? 'hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' 

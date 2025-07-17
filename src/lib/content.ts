@@ -71,7 +71,7 @@ export function getAllCourses(): CourseMeta[] {
   const courseSlugs = fs.readdirSync(coursesDir)
   
   return courseSlugs
-    .map(slug => {
+    .map((slug, index) => {
       const metaPath = path.join(coursesDir, slug, 'meta.json')
       
       if (!fs.existsSync(metaPath)) {
@@ -80,7 +80,43 @@ export function getAllCourses(): CourseMeta[] {
 
       try {
         const metaContent = fs.readFileSync(metaPath, 'utf8')
-        return JSON.parse(metaContent) as CourseMeta
+        const rawData = JSON.parse(metaContent)
+        
+        // Transform the raw JSON data to match the CourseMeta interface
+        const course: CourseMeta = {
+          id: slug, // Use slug as id since it's not in the JSON
+          title: rawData.title,
+          description: rawData.description,
+          slug: rawData.slug,
+          order: rawData.order || index, // Use index as fallback
+          isPublished: rawData.published || rawData.isPublished || false, // Handle both published and isPublished
+          estimatedHours: rawData.estimatedHours || Math.ceil((rawData.modules?.length || 0) * 2), // Estimate based on modules
+          prerequisites: rawData.prerequisites || [],
+          rating: rawData.rating,
+          students: rawData.students,
+          modules: (rawData.modules || []).map((moduleData: Record<string, unknown>, moduleIndex: number) => ({
+            id: (moduleData.slug as string) || `module-${moduleIndex}`, // Use slug as id
+            title: moduleData.title as string,
+            description: moduleData.description as string,
+            slug: moduleData.slug as string,
+            order: (moduleData.order as number) || moduleIndex, // Use index as fallback
+            estimatedHours: (moduleData.estimatedHours as number) || Math.ceil(((moduleData.lessons as unknown[])?.length || 0) * 0.5), // Estimate based on lessons
+            lessons: ((moduleData.lessons as unknown[]) || []).map((lessonData: unknown, lessonIndex: number) => {
+              const lesson = lessonData as Record<string, unknown>
+              return {
+                id: (lesson.slug as string) || `lesson-${lessonIndex}`, // Use slug as id
+                title: lesson.title as string,
+                description: lesson.description as string,
+                slug: lesson.slug as string,
+                order: (lesson.order as number) || lessonIndex, // Use index as fallback
+                type: (lesson.type as 'lesson' | 'project' | 'assignment') || 'lesson', // Default to lesson type
+                isPublished: (lesson.isPublished as boolean) !== false // Default to true unless explicitly false
+              }
+            })
+          }))
+        }
+        
+        return course
       } catch (error) {
         console.error(`Error parsing course meta for ${slug}:`, error)
         return null
@@ -149,20 +185,20 @@ export function getModuleContent(courseSlug: string, moduleSlug: string) {
   const course = getCourseBySlug(courseSlug)
   if (!course) return null
 
-  const module = course.modules.find(m => m.slug === moduleSlug)
-  if (!module) return null
+  const courseModule = course.modules.find(m => m.slug === moduleSlug)
+  if (!courseModule) return null
 
   // Load all lessons for this module
-  const lessons = module.lessons
+  const lessons = courseModule.lessons
     .map(lesson => {
       const lessonContent = getLessonContent(courseSlug, moduleSlug, lesson.slug)
       return lessonContent ? { ...lesson, content: lessonContent } : null
     })
-    .filter((lesson): lesson is any => lesson !== null)
+    .filter((lesson): lesson is NonNullable<typeof lesson> => lesson !== null)
     .sort((a, b) => a.order - b.order)
 
   return {
-    ...module,
+    ...courseModule,
     lessons
   }
 }
@@ -178,21 +214,21 @@ export function getLessonNavigation(
   const course = getCourseBySlug(courseSlug)
   if (!course) return null
 
-  const module = course.modules.find(m => m.slug === moduleSlug)
-  if (!module) return null
+  const courseModule = course.modules.find(m => m.slug === moduleSlug)
+  if (!courseModule) return null
 
-  const currentLessonIndex = module.lessons.findIndex(l => l.slug === lessonSlug)
+  const currentLessonIndex = courseModule.lessons.findIndex(l => l.slug === lessonSlug)
   if (currentLessonIndex === -1) return null
 
-  const currentLesson = module.lessons[currentLessonIndex]
+  const currentLesson = courseModule.lessons[currentLessonIndex]
   
   // Find previous lesson (within same module or from previous module)
   let previousLesson = null
   if (currentLessonIndex > 0) {
     // Previous lesson in same module
     previousLesson = {
-      ...module.lessons[currentLessonIndex - 1],
-      moduleSlug: module.slug
+      ...courseModule.lessons[currentLessonIndex - 1],
+      moduleSlug: courseModule.slug
     }
   } else {
     // Look for last lesson in previous module
@@ -210,11 +246,11 @@ export function getLessonNavigation(
 
   // Find next lesson (within same module or from next module)
   let nextLesson = null
-  if (currentLessonIndex < module.lessons.length - 1) {
+  if (currentLessonIndex < courseModule.lessons.length - 1) {
     // Next lesson in same module
     nextLesson = {
-      ...module.lessons[currentLessonIndex + 1],
-      moduleSlug: module.slug
+      ...courseModule.lessons[currentLessonIndex + 1],
+      moduleSlug: courseModule.slug
     }
   } else {
     // Look for first lesson in next module
@@ -234,7 +270,7 @@ export function getLessonNavigation(
     current: currentLesson,
     previous: previousLesson,
     next: nextLesson,
-    module,
+    module: courseModule,
     course
   }
 }

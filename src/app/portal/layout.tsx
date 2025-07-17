@@ -172,7 +172,7 @@ export default function PortalLayout({
             >
               <BookOpen className="h-6 w-6" />
               <span className={cn(isCollapsed && "hidden")}>
-                Vibe It Admin
+                Project Vibe It - Admin
               </span>
             </Link>
           </div>

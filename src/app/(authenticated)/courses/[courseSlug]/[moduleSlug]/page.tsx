@@ -15,11 +15,8 @@ import {
 } from "@/lib/progress"
 import { 
   BookOpen, 
-  Clock, 
-  Users, 
   CheckCircle, 
   Circle, 
-  ArrowRight, 
   Star,
   Play,
   Lock,
@@ -55,8 +52,8 @@ export default async function ModulePage({ params }: ModulePageProps) {
     notFound()
   }
 
-  const module = course.modules.find(m => m.slug === moduleSlug)
-  if (!module) {
+  const courseModule = course.modules.find(m => m.slug === moduleSlug)
+  if (!courseModule) {
     notFound()
   }
 
@@ -64,9 +61,9 @@ export default async function ModulePage({ params }: ModulePageProps) {
   const progressResult = await getUserProgress()
   const userProgress = progressResult.success ? progressResult.data : []
   
-  const totalLessons = module.lessons.length
-  const totalProjects = module.lessons.filter(lesson => lesson.type === 'project').length
-  const moduleLessonIds = module.lessons.map(lesson => lesson.id)
+  const totalLessons = courseModule.lessons.length
+  const totalProjects = courseModule.lessons.filter(lesson => lesson.type === 'project').length
+  const moduleLessonIds = courseModule.lessons.map(lesson => lesson.slug)
   const completedLessons = getCompletedModuleLessonsCount(userProgress, courseSlug, moduleLessonIds)
   const progressPercentage = calculateModuleProgress(userProgress, courseSlug, moduleLessonIds)
 
@@ -93,13 +90,13 @@ export default async function ModulePage({ params }: ModulePageProps) {
                 </Link>
                 <span className="mx-2">/</span>
                 <span className="text-slate-900 dark:text-white font-medium">
-                  {module.title}
+                  {courseModule.title}
                 </span>
               </div>
             </div>
             
             <Button asChild size="lg" className="text-lg px-6 py-3">
-              <Link href={`/courses/${courseSlug}/${moduleSlug}/${module.lessons[0].slug}`}>
+              <Link href={`/courses/${courseSlug}/${moduleSlug}/${courseModule.lessons[0].slug}`}>
                 <Play className="w-5 h-5 mr-2" />
                 Start Module
               </Link>
@@ -118,7 +115,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
                 <div className="flex items-center gap-4 mb-6">
                   <Badge variant="secondary">
                     <BookOpen className="w-4 h-4 mr-2" />
-                    Module {module.order}
+                    Module {courseModule.order}
                   </Badge>
                   <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                     <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
@@ -127,11 +124,11 @@ export default async function ModulePage({ params }: ModulePageProps) {
                 </div>
                 
                 <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-                  {module.title}
+                  {courseModule.title}
                 </h1>
                 
                 <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
-                  {module.description}
+                  {courseModule.description}
                 </p>
 
                 {/* Module Stats */}
@@ -150,7 +147,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                      {module.estimatedHours}h
+                      {courseModule.estimatedHours}h
                     </div>
                     <div className="text-sm text-slate-600 dark:text-slate-300">Duration</div>
                   </div>
@@ -248,13 +245,13 @@ export default async function ModulePage({ params }: ModulePageProps) {
                 </div>
                 
                 <div className="space-y-4">
-                  {module.lessons.map((lesson, index) => {
-                    const isCompleted = isLessonCompleted(userProgress, courseSlug, lesson.id)
+                  {courseModule.lessons.map((lesson, index) => {
+                    const isCompleted = isLessonCompleted(userProgress, courseSlug, lesson.slug)
                     const canAccess = canAccessLesson(userProgress, courseSlug, index, moduleLessonIds)
 
                     return (
                       <div
-                        key={lesson.id}
+                        key={lesson.slug}
                         className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
                           canAccess 
                             ? 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700' 
@@ -352,7 +349,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
                 
                 <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button asChild className="w-full">
-                    <Link href={`/courses/${courseSlug}/${moduleSlug}/${module.lessons[0].slug}`}>
+                    <Link href={`/courses/${courseSlug}/${moduleSlug}/${courseModule.lessons[0].slug}`}>
                       <Play className="w-4 h-4 mr-2" />
                       Continue Learning
                     </Link>
@@ -414,7 +411,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
                       Take Your Time
                     </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Don't rush through the lessons. Take time to understand each concept.
+                      Don&apos;t rush through the lessons. Take time to understand each concept.
                     </p>
                   </div>
                 </div>
@@ -438,7 +435,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
                       Ask Questions
                     </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Don't hesitate to ask questions in the discussion section.
+                      Don&apos;t hesitate to ask questions in the discussion section.
                     </p>
                   </div>
                 </div>

@@ -11,9 +11,7 @@ import { calculateCourseProgress, getCompletedLessonsCount } from "@/lib/progres
 import { 
   BookOpen, 
   Clock, 
-  Users, 
   CheckCircle, 
-  ArrowRight, 
   Star,
   Play,
   Target,
@@ -90,7 +88,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
             </div>
             
             <Button asChild size="lg" className="text-lg px-6 py-3">
-              <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].id}`}>
+              <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].slug}`}>
                 <Play className="w-5 h-5 mr-2" />
                 Start Learning
               </Link>
@@ -185,7 +183,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                 <div className="flex items-center gap-3 mb-8">
                   <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    What You'll Learn
+                    What You&apos;ll Learn
                   </h2>
                 </div>
                 
@@ -280,8 +278,8 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                 </div>
                 
                 <div className="space-y-6">
-                  {course.modules.map((module, index) => (
-                    <div key={module.id} className="border border-slate-200 dark:border-slate-700 rounded-lg p-6">
+                  {course.modules.map((module) => (
+                    <div key={module.slug} className="border border-slate-200 dark:border-slate-700 rounded-lg p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-4 mb-2">
@@ -304,7 +302,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                       
                       <div className="space-y-3">
                         {module.lessons.map((lesson) => (
-                          <div key={lesson.id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700">
+                          <div key={lesson.slug} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700">
                             <div className="flex-shrink-0">
                               {lesson.type === 'project' ? (
                                 <Code className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -366,12 +364,12 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
               <CardHeader>
                 <CardTitle className="text-xl">Course Preview</CardTitle>
                 <CardDescription>
-                  Get a taste of what you'll learn
+                  Get a taste of what you&apos;ll learn
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">What you'll learn:</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">What you&apos;ll learn:</h4>
                   <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     <li className="flex items-start">
                       <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
@@ -394,7 +392,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                 
                 <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button asChild className="w-full">
-                    <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].id}`}>
+                    <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].slug}`}>
                       <Play className="w-4 h-4 mr-2" />
                       Start Learning
                     </Link>

@@ -1,0 +1,279 @@
+---
+title: "Tech Stack Decisions"
+description: "Learn about frontend frameworks, backend technologies, databases, and popular tech stacks"
+---
+
+# Tech Stack Decisions
+
+"Tech stack" refers to the combination of technologies (programming languages, frameworks, databases, servers) used to build and run an application. With Vibe Coding, AI can help suggest and even set up parts of your tech stack.
+
+## Frontend Frameworks: React, Vue, Angular (Overview)
+
+These are pre-written sets of code and tools that make it much easier and faster to build complex and interactive user interfaces for the web. They provide structure and reusable components.
+
+### React (by Meta)
+Very popular for building dynamic single-page applications. Known for its component-based approach (building UIs from small, reusable pieces).
+
+**Key characteristics:**
+- **Component-based**: Build UIs from reusable, self-contained pieces
+- **Virtual DOM**: Efficiently updates only what needs to change
+- **Large ecosystem**: Extensive library of third-party components and tools
+- **Flexible**: Can be used for web, mobile (React Native), and desktop apps
+
+**Best for:**
+- Dynamic, interactive applications
+- Large-scale applications with complex state management
+- Teams that value flexibility and ecosystem size
+
+**Analogy**: React is like a sophisticated LEGO set with specialized pieces that snap together perfectly, allowing you to build complex structures quickly and efficiently.
+
+### Vue (Open Source)
+Often considered easier to learn than React or Angular, also very popular for interactive UIs.
+
+**Key characteristics:**
+- **Gentle learning curve**: Easier to pick up for beginners
+- **Progressive framework**: Can be used for small parts of a page or entire applications
+- **Built-in features**: Includes routing, state management, and build tools
+- **Excellent documentation**: Clear, comprehensive guides and examples
+
+**Best for:**
+- Projects where you want to get started quickly
+- Teams with varying levels of experience
+- Applications that need to be gradually adopted
+
+**Analogy**: Vue is like a well-designed kitchen where everything is within reach and clearly labeled, making it easy to cook great meals even if you're not a professional chef.
+
+### Angular (by Google)
+A comprehensive framework for building large-scale enterprise applications.
+
+**Key characteristics:**
+- **Full-featured**: Includes everything you need for large applications
+- **TypeScript-first**: Built with TypeScript for better type safety
+- **Opinionated**: Provides clear patterns and conventions
+- **Enterprise-ready**: Designed for large teams and complex applications
+
+**Best for:**
+- Large enterprise applications
+- Teams that prefer structure and conventions
+- Projects requiring strong type safety
+
+**Analogy**: Angular is like a professional kitchen with standardized equipment and procedures, ensuring consistency and quality even with large teams.
+
+### Analogy
+These frameworks are like advanced construction kits for building specific parts of your house, like a pre-fabricated kitchen or a modular bathroom. They speed up the process and ensure consistency.
+
+## Backend Technologies: Node.js, Python, Serverless Functions
+
+These are the tools used to build the "engine room" (backend) of your application.
+
+### Node.js
+Allows you to use JavaScript (which is usually a frontend language) to build backend applications. This means developers can use one language for both frontend and backend.
+
+**Key characteristics:**
+- **JavaScript everywhere**: Same language for frontend and backend
+- **Event-driven**: Excellent for handling many concurrent connections
+- **NPM ecosystem**: Access to thousands of packages and libraries
+- **Fast development**: Quick to prototype and iterate
+
+**Best for:**
+- Real-time applications (chat, gaming, live updates)
+- APIs and microservices
+- Teams already familiar with JavaScript
+- Applications requiring high concurrency
+
+**Popular Node.js frameworks:**
+- Express.js: Minimal and flexible web framework
+- NestJS: Enterprise-grade framework with TypeScript
+- Fastify: High-performance web framework
+
+### Python
+A very versatile and popular language, excellent for web development, data science, AI, and automation. Known for its readability.
+
+**Key characteristics:**
+- **Readable syntax**: Code is easy to understand and write
+- **Extensive libraries**: Rich ecosystem for various domains
+- **AI/ML friendly**: Excellent for machine learning and data science
+- **Rapid prototyping**: Quick to build and test ideas
+
+**Best for:**
+- Data-heavy applications
+- AI and machine learning projects
+- Scientific computing
+- Automation and scripting
+
+**Popular Python frameworks:**
+- Django: Full-featured web framework with built-in admin
+- Flask: Lightweight and flexible micro-framework
+- FastAPI: Modern, fast framework for building APIs
+
+### Serverless Functions (e.g., AWS Lambda, Google Cloud Functions)
+A way to run small pieces of backend code without having to manage a whole server. You only pay when your code runs.
+
+**Key characteristics:**
+- **No server management**: Cloud provider handles infrastructure
+- **Pay-per-use**: Only pay for actual execution time
+- **Auto-scaling**: Automatically handles traffic spikes
+- **Event-driven**: Triggered by specific events or requests
+
+**Best for:**
+- Occasional or unpredictable workloads
+- Microservices and APIs
+- Background processing tasks
+- Cost-sensitive applications
+
+**Analogy**: Instead of keeping a full-time chef (a server) on staff even when no one is eating, serverless functions are like hiring a chef only for the exact minutes they are cooking a specific dish.
+
+## Database Options: PostgreSQL, MongoDB, Firebase
+
+These are specific examples of the databases we discussed earlier.
+
+### PostgreSQL
+A powerful and popular SQL database, known for its reliability and advanced features.
+
+**Key characteristics:**
+- **ACID compliance**: Ensures data integrity and consistency
+- **Advanced features**: JSON support, full-text search, geospatial data
+- **Extensible**: Can add custom functions and data types
+- **Open source**: Free to use and modify
+
+**Best for:**
+- Applications requiring complex queries and relationships
+- Financial and transactional systems
+- Data warehousing and analytics
+- Applications needing advanced database features
+
+### MongoDB
+A leading NoSQL database, great for flexible data structures and scaling.
+
+**Key characteristics:**
+- **Document-based**: Stores data in flexible JSON-like documents
+- **Schema flexibility**: Easy to change data structure over time
+- **Horizontal scaling**: Can distribute data across multiple servers
+- **Rich query language**: Powerful ways to search and filter data
+
+**Best for:**
+- Applications with rapidly changing data structures
+- Content management systems
+- Real-time applications
+- Projects requiring rapid development and iteration
+
+### Firebase (by Google)
+A comprehensive platform that includes a real-time NoSQL database (Firestore), authentication, hosting, and more. It's often favored for rapid development and mobile apps.
+
+**Key characteristics:**
+- **All-in-one platform**: Database, authentication, hosting, analytics
+- **Real-time updates**: Automatic synchronization across devices
+- **Mobile-first**: Excellent for mobile and web applications
+- **Easy to use**: Minimal setup and configuration required
+
+**Best for:**
+- Rapid prototyping and MVP development
+- Mobile applications
+- Real-time collaborative applications
+- Small to medium-sized projects
+
+**Analogy**: Firebase is like a full-service apartment building for your app, providing not just storage (database) but also security (authentication) and a place to live (hosting).
+
+## Popular Combinations: MEAN, MERN, JAMstack
+
+These are common "stacks" or combinations of technologies that developers often use together.
+
+### MEAN Stack
+MongoDB (NoSQL database), Express.js (Node.js framework for backend), Angular (frontend framework), Node.js (backend runtime).
+
+**Characteristics:**
+- **JavaScript throughout**: All technologies use JavaScript/TypeScript
+- **Full-stack solution**: Complete framework for building web applications
+- **Scalable**: Good for applications that need to grow
+- **Enterprise-ready**: Suitable for large, complex applications
+
+**Best for:**
+- Large-scale web applications
+- Teams familiar with JavaScript/TypeScript
+- Applications requiring real-time features
+- Enterprise projects
+
+### MERN Stack
+Similar to MEAN, but uses React for the frontend instead of Angular.
+
+**Characteristics:**
+- **React ecosystem**: Leverages React's large community and tools
+- **Flexible frontend**: React's component-based approach
+- **Rapid development**: Quick to prototype and iterate
+- **Modern tooling**: Access to latest React features and libraries
+
+**Best for:**
+- Modern web applications
+- Teams preferring React over Angular
+- Applications requiring rich user interfaces
+- Startups and rapid development
+
+### JAMstack
+JavaScript, APIs, Markup. This is a modern architecture for building fast, secure, and scalable websites and apps by pre-rendering content and relying heavily on APIs and client-side JavaScript.
+
+**Characteristics:**
+- **Performance**: Fast loading times due to pre-rendered content
+- **Security**: Reduced attack surface with fewer server-side processes
+- **Scalability**: Easy to scale with CDN distribution
+- **Developer experience**: Modern tools and workflows
+
+**Best for:**
+- Content-heavy websites
+- E-commerce sites
+- Marketing websites
+- Applications requiring high performance
+
+**Analogy**: These are like pre-designed meal kits. Instead of picking every single ingredient, you get a curated set of ingredients that are known to work well together for a specific type of meal.
+
+## How AI Helps with Tech Stack Decisions
+
+### AI as a Tech Stack Advisor
+AI tools can help you choose the right technologies by:
+- **Analyzing your requirements** and suggesting appropriate technologies
+- **Explaining trade-offs** between different options
+- **Providing code examples** for different stacks
+- **Helping with setup** and configuration
+
+### AI-Assisted Stack Selection
+When working with AI, you can:
+- **Describe your project** and get stack recommendations
+- **Ask about specific technologies** and their pros/cons
+- **Request comparisons** between different options
+- **Get help setting up** your chosen stack
+
+### Example AI Prompts
+- "I'm building a real-time chat application. What tech stack would you recommend?"
+- "Compare React vs Vue for a small e-commerce site"
+- "What's the best database for a social media app with user-generated content?"
+- "Help me set up a MERN stack project for a task management app"
+
+## Making Your Own Tech Stack Decisions
+
+### Consider Your Project Requirements
+- **Type of application**: Web app, mobile app, desktop app, API
+- **Expected user base**: Number of users, geographic distribution
+- **Data requirements**: Type of data, relationships, query complexity
+- **Performance needs**: Speed, scalability, real-time requirements
+
+### Evaluate Your Team
+- **Skills and experience**: What technologies does your team know?
+- **Learning curve**: How much time can you invest in learning new tools?
+- **Team size**: Some stacks work better for small vs. large teams
+
+### Think About the Future
+- **Scalability**: Will your chosen stack grow with your application?
+- **Maintenance**: How easy will it be to maintain and update?
+- **Community support**: Is there an active community and good documentation?
+- **Job market**: Are developers available for your chosen technologies?
+
+## Key Takeaways
+
+- **Frontend frameworks** provide structure and tools for building user interfaces
+- **Backend technologies** power the server-side logic and data processing
+- **Database choice** depends on your data structure and query needs
+- **Popular stacks** offer proven combinations of technologies
+- **AI can help** you choose and set up the right tech stack
+- **Consider your specific needs** when making technology decisions
+- **Don't overthink it** - you can always change technologies as your project evolves
+
+In the next lesson, we'll explore Development Workflow - the processes and tools used to build, test, and deploy applications effectively. 

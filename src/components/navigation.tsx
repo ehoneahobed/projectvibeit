@@ -40,11 +40,11 @@ interface UserProgress {
  */
 export function Navigation() {
   const { data: session } = useSession()
-  const [userProgress, setUserProgress] = useState<UserProgress[]>([])
+  const [_userProgress, setUserProgress] = useState<UserProgress[]>([])
   const [overallProgress, setOverallProgress] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const lastFetchTime = useRef<number>(0)
-  const fetchTimeoutRef = useRef<NodeJS.Timeout>()
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isMountedRef = useRef(true)
 
   const fetchProgress = useCallback(async (force = false) => {
@@ -83,7 +83,7 @@ export function Navigation() {
         setIsLoading(false)
       }
     }
-  }, [session?.user]) // Removed isLoading from dependencies to prevent infinite re-renders
+  }, [session?.user, isLoading]) // Removed isLoading from dependencies to prevent infinite re-renders
 
   // Listen for custom events to refresh progress
   useEffect(() => {
@@ -137,7 +137,7 @@ export function Navigation() {
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-slate-900 dark:text-white">
-                Vibe It
+                Project Vibe It
               </span>
             </Link>
           </div>
