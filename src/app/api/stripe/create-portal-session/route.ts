@@ -2,11 +2,13 @@ import { NextResponse } from "next/server"
 
 import { auth } from "@/lib/auth/auth"
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User } from "@/lib/models"
 import { stripe } from "@/lib/stripe"
+import { connectDB } from "@/lib/db"
 
 export async function POST() {
   try {
+    await connectDB()
     const session = await auth()
 
     if (!session?.user?.id) {
@@ -18,10 +20,7 @@ export async function POST() {
     }
 
     // Get the user from the database
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { stripeCustomerId: true },
-    })
+    const user = await User.findById(session.user.id, { stripeCustomerId: 1 })
 
     if (!user?.stripeCustomerId) {
       logger.error("No Stripe customer found")

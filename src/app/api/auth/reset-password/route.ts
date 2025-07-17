@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User, PasswordResetToken } from "@/lib/models"
 import { saltAndHash } from "@/lib/utils"
 import { resetPasswordSchema } from "@/lib/validations/auth.schema"
+import { connectDB } from "@/lib/db"
 
 export async function PATCH(request: NextRequest) {
   const body = await request.json()
@@ -22,6 +23,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
+    await connectDB()
     const { password, confirmPassword } = data
 
     if (password !== confirmPassword) {
@@ -32,9 +34,9 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const existingToken = await prisma.passwordResetToken.findUnique({
-      where: { token, expires: { gt: new Date() } },
-      select: { email: true, token: true },
+    const existingToken = await PasswordResetToken.findOne({
+      token,
+      expires: { $gt: new Date() },
     })
 
     if (!existingToken) {
@@ -42,10 +44,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 400 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: existingToken.email },
-      select: { email: true },
-    })
+    const user = await User.findOne({ email: existingToken.email }, { email: 1 })
 
     if (!user) {
       logger.error("User not found")
@@ -54,13 +53,14 @@ export async function PATCH(request: NextRequest) {
 
     const hashedPassword = await saltAndHash(password)
 
-    await prisma.user.update({
-      where: { email: user.email },
-      data: { password: hashedPassword, updatedAt: new Date() },
-    })
+    await User.updateOne(
+      { email: user.email },
+      { password: hashedPassword }
+    )
 
-    await prisma.passwordResetToken.delete({
-      where: { token: existingToken.token, email: existingToken.email },
+    await PasswordResetToken.deleteOne({
+      token: existingToken.token,
+      email: existingToken.email,
     })
 
     logger.info("Password reset successful")

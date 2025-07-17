@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 
 import { sendPaymentFailureEmail } from "@/lib/email-templates/send-payment-failure-email"
-import { prisma } from "@/lib/prisma"
+import { User } from "@/lib/models"
 import { stripe } from "@/lib/stripe"
+import { connectDB } from "@/lib/db"
 
 interface InvoiceWithSubscription extends Stripe.Invoice {
   subscription?: string | Stripe.Subscription
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+  await connectDB()
   const userId = subscription.metadata.userId
 
   if (!userId) {
@@ -91,18 +93,19 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     planName = "pro"
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
+  await User.updateOne(
+    { _id: userId },
+    {
       stripeCustomerId: subscription.customer as string,
       stripeSubscriptionId: subscription.id,
       planName,
       subscriptionStatus: subscription.status,
-    },
-  })
+    }
+  )
 }
 
 async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
+  await connectDB()
   const userId = subscription.metadata.userId
 
   if (!userId) {
@@ -110,13 +113,13 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
     return
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
+  await User.updateOne(
+    { _id: userId },
+    {
       planName: "free",
       subscriptionStatus: "canceled",
-    },
-  })
+    }
+  )
 }
 
 async function handlePaymentSucceeded(invoice: InvoiceWithSubscription) {
@@ -128,6 +131,7 @@ async function handlePaymentSucceeded(invoice: InvoiceWithSubscription) {
 }
 
 async function handlePaymentFailed(invoice: InvoiceWithSubscription) {
+  await connectDB()
   const subscriptionId = invoice.subscription
   if (subscriptionId && typeof subscriptionId === "string") {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -136,13 +140,10 @@ async function handlePaymentFailed(invoice: InvoiceWithSubscription) {
     if (userId) {
       try {
         // Get user details from database
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            email: true,
-            name: true,
-            planName: true,
-          },
+        const user = await User.findById(userId, {
+          email: 1,
+          name: 1,
+          planName: 1,
         })
 
         if (user?.email) {

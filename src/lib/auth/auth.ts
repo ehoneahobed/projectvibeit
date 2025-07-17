@@ -1,4 +1,5 @@
-import { PrismaAdapter } from "@auth/prisma-adapter"
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
+import { MongoClient } from "mongodb"
 import NextAuth from "next-auth"
 import type { Provider } from "next-auth/providers"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -8,10 +9,11 @@ import Resend from "next-auth/providers/resend"
 
 import VerificationEmail from "@/lib/email-templates/verification-email"
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User } from "@/lib/models"
 import { sendEmail } from "@/lib/send-email"
 import { verifyPassword } from "@/lib/utils"
 import { signInSchema } from "@/lib/validations/auth.schema"
+import { connectDB } from "@/lib/db"
 
 declare module "next-auth" {
   interface User {
@@ -36,6 +38,7 @@ if (process.env.NEXT_PUBLIC_AUTH_CREDENTIALS_ENABLED === "true") {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        await connectDB()
         const { success, data, error } = signInSchema.safeParse(credentials)
 
         if (!success) {
@@ -43,11 +46,7 @@ if (process.env.NEXT_PUBLIC_AUTH_CREDENTIALS_ENABLED === "true") {
           throw new Error("Invalid email or password.")
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: data.email,
-          },
-        })
+        const user = await User.findOne({ email: data.email })
 
         if (!user || !user.password) {
           logger.error("User not found or password is missing %s", data.email)
@@ -114,8 +113,10 @@ if (process.env.NEXT_PUBLIC_AUTH_EMAIL_ENABLED === "true") {
   )
 }
 
+const client = new MongoClient(process.env.DATABASE_URL!)
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: MongoDBAdapter(client),
   providers,
   session: {
     strategy: "jwt",
@@ -148,15 +149,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return token
       }
 
-      const dbUser = await prisma.user.findUnique({
-        where: { email: token.email },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          image: true,
-        },
-      })
+      await connectDB()
+      const dbUser = await User.findOne(
+        { email: token.email },
+        { id: 1, name: 1, email: 1, image: 1 }
+      )
 
       if (!dbUser) {
         if (user) {
