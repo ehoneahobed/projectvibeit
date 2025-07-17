@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Circle, ArrowRight, ArrowLeft, Trophy, Star } from "lucide-react"
@@ -49,6 +49,7 @@ export function LessonCompletion({
   const [isCompleting, setIsCompleting] = useState(false)
   const [localCompleted, setLocalCompleted] = useState(isCompleted)
   const router = useRouter()
+  const completionGuardRef = useRef(false)
 
   // Update local state when prop changes
   if (isCompleted !== localCompleted && !isCompleting) {
@@ -57,8 +58,9 @@ export function LessonCompletion({
 
   // Use useCallback to prevent infinite re-renders
   const handleCompleteLesson = useCallback(async () => {
-    if (localCompleted || isCompleting) return
+    if (localCompleted || isCompleting || completionGuardRef.current) return
 
+    completionGuardRef.current = true
     setIsCompleting(true)
     
     try {
@@ -69,11 +71,16 @@ export function LessonCompletion({
         toast.success("Lesson completed! Great job! 🎉")
         
         // Dispatch custom event to notify navigation to refresh progress
-        window.dispatchEvent(new CustomEvent('lesson-completed'))
+        // Use a timeout to prevent immediate re-renders
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('lesson-completed'))
+        }, 100)
         
         // Call the onComplete callback to update parent state
         if (onComplete) {
-          onComplete()
+          setTimeout(() => {
+            onComplete()
+          }, 200)
         }
         
         // Auto-navigate to next lesson after a short delay
@@ -81,6 +88,11 @@ export function LessonCompletion({
           setTimeout(() => {
             const nextModuleSlug = nextLesson.moduleSlug || moduleSlug
             router.push(`/courses/${courseSlug}/${nextModuleSlug}/${nextLesson.slug}`)
+          }, 1500)
+        } else {
+          // Course completed! Redirect to congratulations page
+          setTimeout(() => {
+            router.push(`/courses/${courseSlug}/congratulations`)
           }, 1500)
         }
       } else {
@@ -91,6 +103,10 @@ export function LessonCompletion({
       toast.error("Something went wrong. Please try again.")
     } finally {
       setIsCompleting(false)
+      // Reset the guard after a delay to prevent rapid re-clicks
+      setTimeout(() => {
+        completionGuardRef.current = false
+      }, 1000)
     }
   }, [localCompleted, isCompleting, courseSlug, moduleSlug, lessonId, nextLesson, router, onComplete])
 
@@ -106,7 +122,7 @@ export function LessonCompletion({
       return `Continue to: ${nextLesson.title}`
     }
     if (localCompleted && !nextLesson) {
-      return "You've completed this module!"
+      return "You've completed this course! 🎉"
     }
     return "Complete this lesson to continue"
   }
@@ -166,11 +182,18 @@ export function LessonCompletion({
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          {previousLesson && (
+          {previousLesson ? (
             <Button asChild variant="outline" className="flex-1">
               <Link href={`/courses/${courseSlug}/${previousLesson.moduleSlug || moduleSlug}/${previousLesson.slug}`}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="outline" className="flex-1">
+              <Link href={`/courses/${courseSlug}`}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Course
               </Link>
             </Button>
           )}
@@ -198,9 +221,10 @@ export function LessonCompletion({
               </Link>
             </Button>
           ) : (
-            <Button asChild variant="outline" className="flex-1">
-              <Link href={`/courses/${courseSlug}`}>
-                Back to Course
+            <Button asChild className="flex-1">
+              <Link href={`/courses/${courseSlug}/congratulations`}>
+                <Trophy className="w-4 h-4 mr-2" />
+                View Certificate
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
@@ -219,4 +243,4 @@ export function LessonCompletion({
       </CardContent>
     </Card>
   )
-} 
+}

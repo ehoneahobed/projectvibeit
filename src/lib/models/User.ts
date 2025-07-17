@@ -7,6 +7,7 @@ export interface IProgress {
   completedLessons: string[]
   completedProjects: string[]
   totalProgress: number
+  completedAt?: Date
 }
 
 export interface IUser extends Document {
@@ -35,6 +36,7 @@ const ProgressSchema = new Schema<IProgress>({
   completedLessons: [{ type: String }],
   completedProjects: [{ type: String }],
   totalProgress: { type: Number, default: 0 },
+  completedAt: Date,
 })
 
 const UserSchema = new Schema<IUser>(

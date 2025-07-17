@@ -29,7 +29,8 @@ import {
   Github,
   Globe,
   Video,
-  Book
+  Book,
+  Trophy
 } from "lucide-react"
 import { notFound, redirect } from "next/navigation"
 
@@ -277,23 +278,38 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8">
-              <Button 
-                asChild 
-                variant="outline" 
-                disabled={!previous}
-              >
-                <Link href={previous ? `/courses/${courseSlug}/${(previous as any).moduleSlug || moduleSlug}/${previous.slug}` : "#"}>
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Previous Lesson
-                </Link>
-              </Button>
+              {previous ? (
+                <Button asChild variant="outline">
+                  <Link href={`/courses/${courseSlug}/${(previous as any).moduleSlug || moduleSlug}/${previous.slug}`}>
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Previous Lesson
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href={`/courses/${courseSlug}`}>
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Back to Course
+                  </Link>
+                </Button>
+              )}
               
-              <Button asChild disabled={!next}>
-                <Link href={next ? `/courses/${courseSlug}/${(next as any).moduleSlug || moduleSlug}/${next.slug}` : "#"}>
-                  Next Lesson
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
+              {next ? (
+                <Button asChild>
+                  <Link href={`/courses/${courseSlug}/${(next as any).moduleSlug || moduleSlug}/${next.slug}`}>
+                    Next Lesson
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link href={`/courses/${courseSlug}/congratulations`}>
+                    <Trophy className="w-4 h-4 mr-2" />
+                    View Certificate
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
 

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB()
     
-    const user = await User.findById(session.user.id, { progress: 1 })
+    const user = await User.findById(session.user.id, { progress: 1 }).lean()
     if (!user) {
       return NextResponse.json(
         { success: false, error: "User not found" },
@@ -27,9 +27,20 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Ensure proper serialization of progress data
+    const progress = (user as any).progress || []
+    const serializedProgress = progress.map((p: any) => ({
+      courseId: p.courseId,
+      moduleId: p.moduleId,
+      lessonId: p.lessonId,
+      completedLessons: p.completedLessons || [],
+      completedProjects: p.completedProjects || [],
+      totalProgress: p.totalProgress || 0
+    }))
+
     return NextResponse.json({
       success: true,
-      data: user.progress || []
+      data: serializedProgress
     })
   } catch (error) {
     console.error('Error fetching progress:', error)
@@ -115,9 +126,19 @@ export async function POST(request: NextRequest) {
 
     await user.save()
 
+    // Return serialized progress data to prevent circular references
+    const serializedProgress = {
+      courseId: courseProgress.courseId,
+      moduleId: courseProgress.moduleId,
+      lessonId: courseProgress.lessonId,
+      completedLessons: courseProgress.completedLessons || [],
+      completedProjects: courseProgress.completedProjects || [],
+      totalProgress: courseProgress.totalProgress || 0
+    }
+
     return NextResponse.json({
       success: true,
-      data: courseProgress
+      data: serializedProgress
     })
   } catch (error) {
     console.error('Error updating progress:', error)

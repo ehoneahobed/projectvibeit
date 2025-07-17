@@ -16,12 +16,23 @@ export async function getUserProgress() {
 
     await connectDB()
     
-    const user = await User.findById(session.user.id, { progress: 1 })
+    const user = await User.findById(session.user.id, { progress: 1 }).lean()
     if (!user) {
       return { success: false, error: "User not found", data: null }
     }
 
-    return { success: true, data: user.progress || [], error: null }
+    // Ensure proper serialization of progress data
+    const progress = (user as any).progress || []
+    const serializedProgress = progress.map((p: any) => ({
+      courseId: p.courseId,
+      moduleId: p.moduleId,
+      lessonId: p.lessonId,
+      completedLessons: p.completedLessons || [],
+      completedProjects: p.completedProjects || [],
+      totalProgress: p.totalProgress || 0
+    }))
+
+    return { success: true, data: serializedProgress, error: null }
   } catch (error) {
     console.error('Error fetching user progress:', error)
     return { success: false, error: 'Failed to fetch progress', data: null }
@@ -72,11 +83,30 @@ export async function completeLesson(
     // Add lesson to completed if not already there
     if (!courseProgress.completedLessons.includes(lessonId)) {
       courseProgress.completedLessons.push(lessonId)
+      
+      // Check if course is now completed
+      const course = await import('@/lib/content').then(m => m.getCourseBySlug(courseId))
+      if (course) {
+        const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
+        if (courseProgress.completedLessons.length >= totalLessons && !courseProgress.completedAt) {
+          courseProgress.completedAt = new Date()
+        }
+      }
     }
 
     await user.save()
 
-    return { success: true, data: courseProgress, error: null }
+    // Return serialized progress data to prevent circular references
+    const serializedProgress = {
+      courseId: courseProgress.courseId,
+      moduleId: courseProgress.moduleId,
+      lessonId: courseProgress.lessonId,
+      completedLessons: courseProgress.completedLessons || [],
+      completedProjects: courseProgress.completedProjects || [],
+      totalProgress: courseProgress.totalProgress || 0
+    }
+
+    return { success: true, data: serializedProgress, error: null }
   } catch (error) {
     console.error('Error completing lesson:', error)
     return { success: false, error: 'Failed to complete lesson', data: null }
@@ -122,7 +152,17 @@ export async function uncompleteLesson(
 
     await user.save()
 
-    return { success: true, data: courseProgress, error: null }
+    // Return serialized progress data to prevent circular references
+    const serializedProgress = {
+      courseId: courseProgress.courseId,
+      moduleId: courseProgress.moduleId,
+      lessonId: courseProgress.lessonId,
+      completedLessons: courseProgress.completedLessons || [],
+      completedProjects: courseProgress.completedProjects || [],
+      totalProgress: courseProgress.totalProgress || 0
+    }
+
+    return { success: true, data: serializedProgress, error: null }
   } catch (error) {
     console.error('Error uncompleting lesson:', error)
     return { success: false, error: 'Failed to uncomplete lesson', data: null }

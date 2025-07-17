@@ -13,7 +13,6 @@ import {
   PanelLeft,
   Settings,
   User as UserIcon,
-  Shield,
   AlertTriangle,
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
@@ -145,7 +144,7 @@ export default function PortalLayout({
             Access Denied
           </h1>
           <p className="text-slate-600 dark:text-slate-300 mb-6">
-            You don't have permission to access the admin portal. Only administrators and contributors can access this area.
+            You don&apos;t have permission to access the admin portal. Only administrators and contributors can access this area.
           </p>
           <Button asChild>
             <Link href="/dashboard">

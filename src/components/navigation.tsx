@@ -45,9 +45,10 @@ export function Navigation() {
   const [isLoading, setIsLoading] = useState(false)
   const lastFetchTime = useRef<number>(0)
   const fetchTimeoutRef = useRef<NodeJS.Timeout>()
+  const isMountedRef = useRef(true)
 
   const fetchProgress = useCallback(async (force = false) => {
-    if (!session?.user || isLoading) return
+    if (!session?.user || isLoading || !isMountedRef.current) return
     
     // Prevent too frequent API calls
     const now = Date.now()
@@ -62,7 +63,7 @@ export function Navigation() {
       const response = await fetch('/api/progress')
       const data = await response.json()
       
-      if (data.success) {
+      if (data.success && isMountedRef.current) {
         setUserProgress(data.data || [])
         
         // Calculate overall progress
@@ -78,9 +79,11 @@ export function Navigation() {
     } catch (error) {
       console.error('Error fetching progress:', error)
     } finally {
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setIsLoading(false)
+      }
     }
-  }, [session?.user, isLoading])
+  }, [session?.user]) // Removed isLoading from dependencies to prevent infinite re-renders
 
   // Listen for custom events to refresh progress
   useEffect(() => {
@@ -104,9 +107,20 @@ export function Navigation() {
     }
   }, [fetchProgress])
 
+  // Initial fetch
   useEffect(() => {
     fetchProgress(false)
   }, [fetchProgress])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current)
+      }
+    }
+  }, [])
 
   if (!session?.user) {
     return null

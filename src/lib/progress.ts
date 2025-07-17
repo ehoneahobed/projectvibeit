@@ -86,6 +86,22 @@ export function getCompletedModuleLessonsCount(
 }
 
 /**
+ * Check if a course is completed
+ */
+export function isCourseCompleted(
+  userProgress: IProgress[],
+  courseId: string,
+  totalLessons: number
+): boolean {
+  const courseProgress = userProgress.find(p => p.courseId === courseId)
+  if (!courseProgress) {
+    return false
+  }
+  
+  return courseProgress.completedLessons.length >= totalLessons
+}
+
+/**
  * Check if a lesson can be accessed (previous lesson completed or first lesson)
  */
 export function canAccessLesson(

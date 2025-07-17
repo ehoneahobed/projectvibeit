@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Loader2 } from "lucide-react"
 import { completeLesson } from "@/lib/progress-actions"
@@ -33,10 +33,12 @@ export function FloatingCompletionButton({
 }: FloatingCompletionButtonProps) {
   const [isCompleting, setIsCompleting] = useState(false)
   const router = useRouter()
+  const completionGuardRef = useRef(false)
 
   const handleComplete = useCallback(async () => {
-    if (isCompleted || isCompleting) return
+    if (isCompleted || isCompleting || completionGuardRef.current) return
 
+    completionGuardRef.current = true
     setIsCompleting(true)
     
     try {
@@ -46,11 +48,16 @@ export function FloatingCompletionButton({
         toast.success("Lesson completed! Great job! 🎉")
         
         // Dispatch custom event to notify navigation to refresh progress
-        window.dispatchEvent(new CustomEvent('lesson-completed'))
+        // Use a timeout to prevent immediate re-renders
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('lesson-completed'))
+        }, 100)
         
         // Call the onComplete callback to update parent state
         if (onComplete) {
-          onComplete()
+          setTimeout(() => {
+            onComplete()
+          }, 200)
         }
         
         // Auto-navigate to next lesson after a short delay
@@ -58,6 +65,11 @@ export function FloatingCompletionButton({
           setTimeout(() => {
             const nextModuleSlug = nextLesson.moduleSlug || moduleSlug
             router.push(`/courses/${courseSlug}/${nextModuleSlug}/${nextLesson.slug}`)
+          }, 1500)
+        } else {
+          // Course completed! Redirect to congratulations page
+          setTimeout(() => {
+            router.push(`/courses/${courseSlug}/congratulations`)
           }, 1500)
         }
       } else {
@@ -68,6 +80,10 @@ export function FloatingCompletionButton({
       toast.error("Something went wrong. Please try again.")
     } finally {
       setIsCompleting(false)
+      // Reset the guard after a delay to prevent rapid re-clicks
+      setTimeout(() => {
+        completionGuardRef.current = false
+      }, 1000)
     }
   }, [isCompleted, isCompleting, courseSlug, moduleSlug, lessonId, nextLesson, router, onComplete])
 
