@@ -34,9 +34,6 @@ const UserSchema = new Schema<IUser>(
   }
 )
 
-// Create indexes
-UserSchema.index({ email: 1 })
-UserSchema.index({ stripeCustomerId: 1 })
-UserSchema.index({ stripeSubscriptionId: 1 })
+// Indexes are automatically created by unique: true in field definitions
 
 export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema)

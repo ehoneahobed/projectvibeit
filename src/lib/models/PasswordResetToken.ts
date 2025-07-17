@@ -15,8 +15,7 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>(
   }
 )
 
-// Create indexes
-PasswordResetTokenSchema.index({ token: 1 }, { unique: true })
+// Create compound index for email and token
 PasswordResetTokenSchema.index({ email: 1, token: 1 }, { unique: true })
 
 export const PasswordResetToken = mongoose.models.PasswordResetToken || mongoose.model<IPasswordResetToken>("PasswordResetToken", PasswordResetTokenSchema)

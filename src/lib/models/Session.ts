@@ -19,8 +19,6 @@ const SessionSchema = new Schema<ISession>(
   }
 )
 
-// Create indexes
-SessionSchema.index({ sessionToken: 1 }, { unique: true })
-SessionSchema.index({ userId: 1 })
+// Indexes are automatically created by unique: true in field definitions
 
 export const Session = mongoose.models.Session || mongoose.model<ISession>("Session", SessionSchema)

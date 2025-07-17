@@ -24,8 +24,7 @@ const AuthenticatorSchema = new Schema<IAuthenticator>(
   }
 )
 
-// Create indexes
+// Create compound index for userId and credentialID
 AuthenticatorSchema.index({ userId: 1, credentialID: 1 }, { unique: true })
-AuthenticatorSchema.index({ credentialID: 1 }, { unique: true })
 
 export const Authenticator = mongoose.models.Authenticator || mongoose.model<IAuthenticator>("Authenticator", AuthenticatorSchema)
