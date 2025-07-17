@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { auth } from "@/lib/auth/auth"
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User, VerificationToken } from "@/lib/models"
 import { saltAndHash } from "@/lib/utils"
+import { connectDB } from "@/lib/db"
 
 export async function PATCH(request: NextRequest) {
   const token = new URL(request.url).searchParams.get("token")
@@ -19,15 +20,13 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Missing token" }, { status: 400 })
   }
 
+  await connectDB()
   const hashedToken = await saltAndHash(token)
 
-  const existingToken = await prisma.verificationToken.findFirst({
-    where: {
-      identifier: session.user.email,
-      token: hashedToken,
-      expires: { gt: new Date() },
-    },
-    select: { identifier: true, token: true },
+  const existingToken = await VerificationToken.findOne({
+    identifier: session.user.email,
+    token: hashedToken,
+    expires: { $gt: new Date() },
   })
 
   if (!existingToken) {
@@ -36,18 +35,14 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    await prisma.user.update({
-      where: { email: existingToken.identifier },
-      data: { emailVerified: new Date(), updatedAt: new Date() },
-    })
+    await User.updateOne(
+      { email: existingToken.identifier },
+      { emailVerified: new Date() }
+    )
 
-    await prisma.verificationToken.delete({
-      where: {
-        identifier_token: {
-          identifier: existingToken.identifier,
-          token: existingToken.token,
-        },
-      },
+    await VerificationToken.deleteOne({
+      identifier: existingToken.identifier,
+      token: existingToken.token,
     })
 
     logger.info("Email verified successfully")

@@ -2,9 +2,10 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { auth } from "@/lib/auth/auth"
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User } from "@/lib/models"
 import { saltAndHash, verifyPassword } from "@/lib/utils"
 import { changePasswordSchema } from "@/lib/validations/auth.schema"
+import { connectDB } from "@/lib/db"
 
 export async function PATCH(request: NextRequest) {
   const body = await request.json()
@@ -23,12 +24,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
+    await connectDB()
     const { currentPassword, newPassword } = data
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { password: true },
-    })
+    const user = await User.findById(session.user.id, { password: 1 })
 
     if (!user) {
       logger.error("User not found")
@@ -58,10 +57,10 @@ export async function PATCH(request: NextRequest) {
 
     const hashedNewPassword = await saltAndHash(newPassword)
 
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { password: hashedNewPassword, updatedAt: new Date() },
-    })
+    await User.updateOne(
+      { _id: session.user.id },
+      { password: hashedNewPassword }
+    )
 
     logger.info("Password changed successfully")
     return NextResponse.json(

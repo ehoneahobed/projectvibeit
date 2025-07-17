@@ -3,8 +3,9 @@ import { NextResponse, type NextRequest } from "next/server"
 
 import { sendPasswordResetEmail } from "@/lib/email-templates/send-password-reset-email"
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User, PasswordResetToken } from "@/lib/models"
 import { forgotPasswordSchema } from "@/lib/validations/auth.schema"
+import { connectDB } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
@@ -16,11 +17,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await connectDB()
     const { email } = data
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { email: true },
-    })
+    const user = await User.findOne({ email }, { email: 1 })
 
     if (!user) {
       logger.warn("No user found with this email")
@@ -30,12 +29,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const passwordResetToken = await prisma.passwordResetToken.create({
-      data: {
-        email,
-        token: crypto.randomBytes(32).toString("hex"),
-        expires: new Date(Date.now() + 1000 * 60 * 60), // 1 hour
-      },
+    const passwordResetToken = await PasswordResetToken.create({
+      email,
+      token: crypto.randomBytes(32).toString("hex"),
+      expires: new Date(Date.now() + 1000 * 60 * 60), // 1 hour
     })
 
     await sendPasswordResetEmail({

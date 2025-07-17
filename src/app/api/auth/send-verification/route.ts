@@ -4,30 +4,30 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import VerificationEmail from "@/lib/email-templates/verification-email"
 import { logger } from "@/lib/logger"
-import { prisma } from "@/lib/prisma"
+import { User, VerificationToken } from "@/lib/models"
 import { sendEmail } from "@/lib/send-email"
 import { saltAndHash } from "@/lib/utils"
+import { connectDB } from "@/lib/db"
 
 async function handleSendVerificationEmail(
   email: string,
   mode: "resend" | "send"
 ) {
+  await connectDB()
   const token = crypto.randomBytes(32).toString("hex")
   const hashedToken = await saltAndHash(token)
   const expires = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24 hours
 
   if (mode === "resend") {
-    await prisma.verificationToken.update({
-      where: { identifier_token: { identifier: email, token: hashedToken } },
-      data: { token: hashedToken, expires },
-    })
+    await VerificationToken.updateOne(
+      { identifier: email },
+      { token: hashedToken, expires }
+    )
   } else {
-    await prisma.verificationToken.create({
-      data: {
-        identifier: email,
-        token: hashedToken,
-        expires,
-      },
+    await VerificationToken.create({
+      identifier: email,
+      token: hashedToken,
+      expires,
     })
   }
 
@@ -65,12 +65,10 @@ export async function POST() {
   }
 
   try {
+    await connectDB()
     const { email } = session.user
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { email: true, emailVerified: true },
-    })
+    const user = await User.findOne({ email }, { email: 1, emailVerified: 1 })
 
     if (!user) {
       logger.error("User not found")
@@ -85,9 +83,9 @@ export async function POST() {
       )
     }
 
-    const existingToken = await prisma.verificationToken.findFirst({
-      where: { identifier: email, expires: { gt: new Date() } },
-      select: { identifier: true, token: true },
+    const existingToken = await VerificationToken.findOne({
+      identifier: email,
+      expires: { $gt: new Date() },
     })
 
     if (existingToken) {
