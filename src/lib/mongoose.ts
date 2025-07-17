@@ -1,4 +1,9 @@
-import mongoose from "mongoose"
+import mongoose, { Mongoose } from "mongoose"
+
+declare global {
+  // eslint-disable-next-line no-var
+  var mongoose: { conn: Mongoose | null; promise: Promise<Mongoose> | null } | undefined;
+}
 
 const MONGODB_URI = process.env.DATABASE_URL!
 
@@ -13,13 +18,14 @@ if (!MONGODB_URI) {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = global.mongoose
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null }
-}
 
 async function dbConnect() {
+  let cached = global.mongoose
+  if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null }
+  }
+  if (!cached) throw new Error("Failed to initialize mongoose cache")
+
   if (cached.conn) {
     return cached.conn
   }

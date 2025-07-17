@@ -3,34 +3,30 @@
 import * as React from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Input, type InputProps } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Button } from "./button";
 
-const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
+const PasswordInput = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     ({ className, ...props }, ref) => {
-        const [showPassword, setShowPassword] = React.useState(false);
+        const [show, setShow] = React.useState(false);
 
         return (
             <div className="relative">
                 <Input
-                    type={showPassword ? "text" : "password"}
-                    className={cn("pr-10", className)}
                     ref={ref}
+                    type={show ? "text" : "password"}
+                    className={cn("pr-10", className)}
                     {...props}
                 />
                 <Button
                     type="button"
+                    tabIndex={-1}
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-2 text-muted-foreground"
+                    onClick={() => setShow((s) => !s)}
                 >
-                    {showPassword ? (
-                        <EyeOff className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                        <Eye className="h-4 w-4" aria-hidden="true" />
-                    )}
+                    {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
             </div>
         );
