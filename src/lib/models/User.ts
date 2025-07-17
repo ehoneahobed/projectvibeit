@@ -1,5 +1,14 @@
 import mongoose, { Schema, Document } from "mongoose"
 
+export interface IProgress {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedLessons: string[]
+  completedProjects: string[]
+  totalProgress: number
+}
+
 export interface IUser extends Document {
   id: string
   name?: string
@@ -11,10 +20,21 @@ export interface IUser extends Document {
   stripeSubscriptionId?: string
   planName: string
   subscriptionStatus?: string
+  role: "student" | "contributor" | "admin"
+  progress: IProgress[]
   createdAt: Date
   updatedAt: Date
   archivedAt?: Date
 }
+
+const ProgressSchema = new Schema<IProgress>({
+  courseId: { type: String, required: true },
+  moduleId: { type: String, required: true },
+  lessonId: { type: String, required: true },
+  completedLessons: [{ type: String }],
+  completedProjects: [{ type: String }],
+  totalProgress: { type: Number, default: 0 },
+})
 
 const UserSchema = new Schema<IUser>(
   {
@@ -27,6 +47,8 @@ const UserSchema = new Schema<IUser>(
     stripeSubscriptionId: { type: String, unique: true, sparse: true },
     planName: { type: String, default: "free" },
     subscriptionStatus: String,
+    role: { type: String, enum: ["student", "contributor", "admin"], default: "student" },
+    progress: [ProgressSchema],
     archivedAt: Date,
   },
   {
