@@ -1,0 +1,234 @@
+---
+title: "Creating Your First HTML Page"
+description: "Write your first HTML code and understand the basics of web structure."
+type: "project"
+order: 3
+assignment:
+  title: "Personal Learning Journey Page"
+  description: "Create a personal webpage that documents your learning journey in web development."
+  instructions: |
+    Build a complete HTML page that includes:
+    - A proper HTML document structure
+    - A title and heading
+    - Multiple paragraphs about your learning goals
+    - A list of topics you want to learn
+    - A link to your GitHub profile (or create one)
+    - Proper formatting and structure
+  submissionType: "github"
+  starterCode: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Learning Journey</title>
+    </head>
+    <body>
+        <h1>Welcome to My Learning Journey</h1>
+        <p>Hello! I'm learning web development and this is my first page.</p>
+        
+        <h2>What I'm Learning</h2>
+        <ul>
+            <li>HTML - Structure</li>
+            <li>CSS - Styling</li>
+            <li>JavaScript - Interactivity</li>
+        </ul>
+        
+        <h2>My Goals</h2>
+        <p>I want to become a web developer and build amazing websites!</p>
+        
+        <p>Check out my progress: <a href="https://github.com/myusername">My GitHub</a></p>
+    </body>
+    </html>
+resources:
+  - title: "MDN HTML Basics"
+    url: "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics"
+    type: "article"
+  - title: "HTML Validator"
+    url: "https://validator.w3.org/"
+    type: "tool"
+  - title: "GitHub - Create Account"
+    url: "https://github.com/signup"
+    type: "tool"
+---
+
+# Creating Your First HTML Page
+
+Congratulations! You've set up your development environment and now it's time to create your first HTML page. This project will help you understand the basic structure of HTML documents and get comfortable with writing code.
+
+## What is HTML?
+
+**HTML (HyperText Markup Language)** is the standard markup language for creating web pages. It describes the structure of a web page and tells browsers how to display the content.
+
+### Basic HTML Structure
+
+Every HTML document has a specific structure:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Title</title>
+</head>
+<body>
+    <!-- Content goes here -->
+</body>
+</html>
+```
+
+## Understanding the Structure
+
+### 1. DOCTYPE Declaration
+```html
+<!DOCTYPE html>
+```
+This tells the browser that this is an HTML5 document.
+
+### 2. HTML Element
+```html
+<html lang="en">
+```
+The root element that contains all other elements. The `lang="en"` attribute specifies that the content is in English.
+
+### 3. Head Section
+```html
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Title</title>
+</head>
+```
+Contains metadata about the document:
+- **charset**: Specifies character encoding
+- **viewport**: Makes the page responsive on mobile devices
+- **title**: Sets the page title (shown in browser tab)
+
+### 4. Body Section
+```html
+<body>
+    <!-- Content goes here -->
+</body>
+```
+Contains all the visible content of the webpage.
+
+## Common HTML Elements
+
+### Headings
+```html
+<h1>Main Heading</h1>
+<h2>Subheading</h2>
+<h3>Section Heading</h3>
+```
+
+### Paragraphs
+```html
+<p>This is a paragraph of text.</p>
+```
+
+### Lists
+```html
+<!-- Unordered list -->
+<ul>
+    <li>First item</li>
+    <li>Second item</li>
+</ul>
+
+<!-- Ordered list -->
+<ol>
+    <li>First step</li>
+    <li>Second step</li>
+</ol>
+```
+
+### Links
+```html
+<a href="https://example.com">Link text</a>
+```
+
+## Your Project: Personal Learning Journey Page
+
+### Project Requirements
+
+Create a webpage that includes:
+
+1. **Proper HTML Structure**: Use the basic HTML template
+2. **Personal Introduction**: Write about yourself and your learning goals
+3. **Learning Topics**: List the technologies you want to learn
+4. **GitHub Link**: Include a link to your GitHub profile
+5. **Clean Formatting**: Use headings, paragraphs, and lists appropriately
+
+### Getting Started
+
+1. **Create a new file** called `index.html` in your project folder
+2. **Use the starter code** provided above as a template
+3. **Customize the content** with your own information
+4. **Test your page** using Live Server
+
+### Customization Ideas
+
+- Add your name and background
+- Include your learning goals and timeline
+- List specific projects you want to build
+- Add links to resources you find helpful
+- Include a photo or avatar (we'll learn about images later)
+
+## Best Practices
+
+### Code Organization
+- Use consistent indentation (2 spaces recommended)
+- Add comments to explain your code
+- Use meaningful element names and attributes
+
+### Content Structure
+- Use headings to organize your content
+- Keep paragraphs short and readable
+- Use lists for related items
+- Make sure your content flows logically
+
+### Validation
+- Use the [HTML Validator](https://validator.w3.org/) to check your code
+- Fix any errors or warnings
+- Ensure your page works in different browsers
+
+## Submission Guidelines
+
+### What to Submit
+1. **GitHub Repository**: Create a new repository for this project
+2. **HTML File**: Your completed `index.html` file
+3. **README**: A brief description of your project
+4. **Live Demo**: A link to view your page (GitHub Pages or similar)
+
+### Repository Structure
+```
+my-learning-journey/
+├── index.html
+├── README.md
+└── .gitignore
+```
+
+### README Content
+Your README should include:
+- Project title and description
+- What you learned
+- Technologies used
+- How to view the project
+- Any challenges you faced
+
+## Next Steps
+
+After completing this project:
+1. **Review your code** and make improvements
+2. **Share your work** with the community
+3. **Get feedback** from other learners
+4. **Plan your next project** based on what you learned
+
+## Resources for Help
+
+- **MDN HTML Documentation**: Comprehensive HTML reference
+- **HTML Validator**: Check your code for errors
+- **Community Forums**: Ask questions and get help
+- **GitHub**: Explore other learners' projects for inspiration
+
+Remember, this is your first step in web development. Don't worry if everything isn't perfect - focus on learning and having fun with the process! 

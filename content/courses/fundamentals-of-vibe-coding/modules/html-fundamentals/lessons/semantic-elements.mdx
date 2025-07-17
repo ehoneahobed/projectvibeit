@@ -1,0 +1,364 @@
+---
+title: "Semantic HTML Elements"
+description: "Learn to use semantic elements for better accessibility and SEO."
+type: "lesson"
+order: 2
+resources:
+  - title: "MDN - Semantic HTML"
+    url: "https://developer.mozilla.org/en-US/docs/Glossary/Semantics"
+    type: "documentation"
+  - title: "HTML5 Semantic Elements - YouTube"
+    url: "https://www.youtube.com/watch?v=kGW8F_cHVLk"
+    type: "video"
+  - title: "HTML5 Semantic Elements Cheat Sheet"
+    url: "https://www.wpkube.com/html5-semantic-elements/"
+    type: "article"
+---
+
+# Semantic HTML Elements
+
+Semantic HTML elements provide meaning to your content, making it more accessible to screen readers and better understood by search engines. In this lesson, you'll learn how to use semantic elements to create more meaningful and accessible web pages.
+
+## What Are Semantic Elements?
+
+Semantic elements clearly describe their meaning to both the browser and the developer. Instead of using generic `<div>` elements for everything, semantic elements tell us what type of content they contain.
+
+### Before (Non-semantic):
+```html
+<div class="header">
+    <div class="nav">
+        <div class="nav-item">Home</div>
+        <div class="nav-item">About</div>
+    </div>
+</div>
+<div class="main">
+    <div class="content">Main content here</div>
+</div>
+<div class="footer">Footer content</div>
+```
+
+### After (Semantic):
+```html
+<header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+    </nav>
+</header>
+<main>
+    <article>Main content here</article>
+</main>
+<footer>Footer content</footer>
+```
+
+## Key Semantic Elements
+
+### Document Structure Elements
+
+#### `<header>`
+Represents introductory content, typically containing headings, navigation, or logos.
+
+```html
+<header>
+    <h1>Website Title</h1>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+    </nav>
+</header>
+```
+
+#### `<nav>`
+Represents a section of navigation links.
+
+```html
+<nav>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+    </ul>
+</nav>
+```
+
+#### `<main>`
+Represents the main content of the document. There should be only one `<main>` element per page.
+
+```html
+<main>
+    <h1>Main Content Title</h1>
+    <p>This is the main content of the page.</p>
+</main>
+```
+
+#### `<footer>`
+Represents footer content, typically containing copyright information, contact details, or links.
+
+```html
+<footer>
+    <p>&copy; 2024 My Website. All rights reserved.</p>
+    <nav>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+    </nav>
+</footer>
+```
+
+### Content Sectioning Elements
+
+#### `<section>`
+Represents a standalone section of content.
+
+```html
+<section>
+    <h2>About Us</h2>
+    <p>Learn more about our company and mission.</p>
+</section>
+
+<section>
+    <h2>Our Services</h2>
+    <p>Discover what we can do for you.</p>
+</section>
+```
+
+#### `<article>`
+Represents a self-contained composition that could be distributed independently.
+
+```html
+<article>
+    <header>
+        <h2>Blog Post Title</h2>
+        <time datetime="2024-01-15">January 15, 2024</time>
+    </header>
+    <p>Blog post content here...</p>
+    <footer>
+        <p>Written by John Doe</p>
+    </footer>
+</article>
+```
+
+#### `<aside>`
+Represents content that is tangentially related to the main content.
+
+```html
+<aside>
+    <h3>Related Articles</h3>
+    <ul>
+        <li><a href="/article1">Article 1</a></li>
+        <li><a href="/article2">Article 2</a></li>
+    </ul>
+</aside>
+```
+
+### Text Content Elements
+
+#### `<h1>` to `<h6>`
+Heading elements that create a document outline.
+
+```html
+<h1>Main Title</h1>
+<h2>Section Title</h2>
+<h3>Subsection Title</h3>
+```
+
+#### `<p>`
+Represents a paragraph of text.
+
+```html
+<p>This is a paragraph of text that contains important information.</p>
+```
+
+#### `<blockquote>`
+Represents a section that is quoted from another source.
+
+```html
+<blockquote cite="https://example.com/source">
+    <p>This is a quote from another source.</p>
+    <footer>— Author Name</footer>
+</blockquote>
+```
+
+#### `<figure>` and `<figcaption>`
+Represents self-contained content with an optional caption.
+
+```html
+<figure>
+    <img src="image.jpg" alt="Description of image">
+    <figcaption>Caption for the image</figcaption>
+</figure>
+```
+
+## Complete Semantic Example
+
+Here's a complete example using semantic elements:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic HTML Example</title>
+</head>
+<body>
+    <header>
+        <h1>My Website</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <article>
+            <header>
+                <h2>Understanding Semantic HTML</h2>
+                <time datetime="2024-01-15">January 15, 2024</time>
+            </header>
+            
+            <section>
+                <h3>What is Semantic HTML?</h3>
+                <p>Semantic HTML provides meaning to your content...</p>
+            </section>
+
+            <section>
+                <h3>Benefits of Semantic HTML</h3>
+                <ul>
+                    <li>Better accessibility</li>
+                    <li>Improved SEO</li>
+                    <li>Cleaner code</li>
+                </ul>
+            </section>
+
+            <figure>
+                <img src="semantic-diagram.png" alt="Diagram showing semantic HTML structure">
+                <figcaption>Visual representation of semantic HTML elements</figcaption>
+            </figure>
+
+            <footer>
+                <p>Written by: John Doe</p>
+                <p>Last updated: January 15, 2024</p>
+            </footer>
+        </article>
+
+        <aside>
+            <h3>Related Articles</h3>
+            <ul>
+                <li><a href="/html-basics">HTML Basics</a></li>
+                <li><a href="/accessibility">Web Accessibility</a></li>
+                <li><a href="/seo">SEO Best Practices</a></li>
+            </ul>
+        </aside>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 My Website. All rights reserved.</p>
+        <nav>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+        </nav>
+    </footer>
+</body>
+</html>
+```
+
+## Benefits of Semantic HTML
+
+### 1. Accessibility
+- Screen readers can better understand your content
+- Users with disabilities can navigate more easily
+- Better keyboard navigation support
+
+### 2. SEO (Search Engine Optimization)
+- Search engines understand your content better
+- Improved search rankings
+- Better content indexing
+
+### 3. Maintainability
+- Code is more readable and self-documenting
+- Easier to understand the structure
+- Better for team collaboration
+
+### 4. Future-Proofing
+- Standards-compliant code
+- Better browser support
+- Easier to update and modify
+
+## Best Practices
+
+### 1. Use Elements for Their Intended Purpose
+- `<nav>` for navigation
+- `<main>` for main content
+- `<article>` for standalone content
+- `<section>` for thematic grouping
+
+### 2. Maintain Proper Heading Hierarchy
+- Use `<h1>` for the main title
+- Use `<h2>` for major sections
+- Use `<h3>` for subsections
+- Don't skip heading levels
+
+### 3. Include Meaningful Alt Text
+```html
+<img src="photo.jpg" alt="A beautiful sunset over the mountains">
+```
+
+### 4. Use ARIA Labels When Needed
+```html
+<button aria-label="Close dialog">×</button>
+```
+
+## Common Mistakes to Avoid
+
+- **Using `<div>` for everything**: Use semantic elements instead
+- **Skipping heading levels**: Maintain proper hierarchy
+- **Missing alt text**: Always include descriptive alt text
+- **Overusing semantic elements**: Don't use them just for styling
+- **Ignoring accessibility**: Consider screen readers and keyboard navigation
+
+## Practice Exercise
+
+Convert this non-semantic HTML to semantic HTML:
+
+```html
+<div class="page">
+    <div class="top">
+        <div class="logo">My Blog</div>
+        <div class="menu">
+            <div class="menu-item">Home</div>
+            <div class="menu-item">About</div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="post">
+            <div class="post-title">My First Post</div>
+            <div class="post-text">This is my first blog post...</div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="copyright">© 2024</div>
+    </div>
+</div>
+```
+
+## Summary
+
+In this lesson, you learned:
+
+- What semantic HTML elements are and why they matter
+- Key semantic elements for document structure
+- How to use semantic elements properly
+- Benefits of semantic HTML for accessibility and SEO
+- Best practices for creating semantic markup
+
+## Next Steps
+
+In the next lesson, you'll build a complete personal portfolio website using all the semantic HTML elements you've learned.
+
+---
+
+**Ready to practice?** Try converting some of your existing HTML to use semantic elements! 

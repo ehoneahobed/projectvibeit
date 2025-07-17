@@ -1,0 +1,196 @@
+---
+title: "HTML Document Structure"
+description: "Understand the basic structure of HTML documents."
+type: "lesson"
+order: 1
+resources:
+  - title: "MDN - HTML Document Structure"
+    url: "https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Document_and_website_structure"
+    type: "documentation"
+  - title: "HTML5 Document Structure - YouTube"
+    url: "https://www.youtube.com/watch?v=UB1O30fR-EE"
+    type: "video"
+---
+
+# HTML Document Structure
+
+Every HTML document follows a specific structure that browsers understand and use to render web pages. In this lesson, you'll learn the essential components that make up a well-formed HTML document.
+
+## The Basic HTML Template
+
+Every HTML document starts with this basic structure:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Title</title>
+</head>
+<body>
+    <!-- Your content goes here -->
+</body>
+</html>
+```
+
+## Understanding Each Component
+
+### 1. DOCTYPE Declaration
+
+```html
+<!DOCTYPE html>
+```
+
+The DOCTYPE declaration tells the browser that this is an HTML5 document. It must be the very first line of your HTML file.
+
+### 2. HTML Element
+
+```html
+<html lang="en">
+```
+
+The `<html>` element is the root element of your document. The `lang` attribute specifies the language of the document, which helps with accessibility and SEO.
+
+### 3. Head Section
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Title</title>
+</head>
+```
+
+The `<head>` section contains metadata about your document:
+
+- **`<meta charset="UTF-8">`**: Specifies character encoding
+- **`<meta name="viewport">`**: Makes the page responsive on mobile devices
+- **`<title>`**: Sets the page title (appears in browser tab)
+
+### 4. Body Section
+
+```html
+<body>
+    <!-- Your content goes here -->
+</body>
+```
+
+The `<body>` section contains all the visible content of your webpage.
+
+## Essential Meta Tags
+
+### Character Encoding
+```html
+<meta charset="UTF-8">
+```
+This ensures proper display of special characters and emojis.
+
+### Viewport
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+```
+This makes your page responsive and properly scaled on mobile devices.
+
+### Description
+```html
+<meta name="description" content="A brief description of your page">
+```
+This helps with SEO and appears in search results.
+
+## Complete Example
+
+Here's a complete HTML document with all essential elements:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn about HTML document structure">
+    <title>HTML Document Structure - Learning HTML</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to HTML Learning</h1>
+        <nav>
+            <ul>
+                <li><a href="#basics">Basics</a></li>
+                <li><a href="#structure">Structure</a></li>
+                <li><a href="#practice">Practice</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="basics">
+            <h2>HTML Basics</h2>
+            <p>HTML is the foundation of web development.</p>
+        </section>
+
+        <section id="structure">
+            <h2>Document Structure</h2>
+            <p>Every HTML document has a specific structure.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 HTML Learning. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+```
+
+## Best Practices
+
+### 1. Always Include DOCTYPE
+Never skip the DOCTYPE declaration - it's essential for proper rendering.
+
+### 2. Use Semantic Elements
+Use meaningful HTML5 elements like `<header>`, `<nav>`, `<main>`, `<section>`, and `<footer>`.
+
+### 3. Set Language Attribute
+Always include the `lang` attribute for accessibility and SEO.
+
+### 4. Include Viewport Meta Tag
+Essential for responsive design on mobile devices.
+
+### 5. Use Descriptive Titles
+Make your page titles descriptive and unique.
+
+## Common Mistakes to Avoid
+
+- **Missing DOCTYPE**: Can cause rendering issues
+- **No viewport meta tag**: Mobile devices won't display properly
+- **Missing charset**: Special characters may not display correctly
+- **No language attribute**: Hurts accessibility and SEO
+- **Empty title**: Bad for SEO and user experience
+
+## Practice Exercise
+
+Create a simple HTML document about your favorite hobby. Include:
+
+1. Proper DOCTYPE and HTML structure
+2. Meaningful title and description
+3. Header with navigation
+4. Main content with sections
+5. Footer with copyright information
+
+## Summary
+
+In this lesson, you learned:
+
+- The essential components of an HTML document
+- How to structure your HTML properly
+- Important meta tags and their purposes
+- Best practices for creating well-formed HTML
+- Common mistakes to avoid
+
+## Next Steps
+
+In the next lesson, we'll explore semantic HTML elements and learn how to create more meaningful and accessible web content.
+
+---
+
+**Ready to practice?** Try creating your own HTML document using the structure you learned in this lesson! 

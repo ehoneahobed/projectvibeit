@@ -1,0 +1,165 @@
+---
+title: "Setting Up Your Development Environment"
+description: "Install and configure the tools you need for web development."
+type: "lesson"
+order: 2
+resources:
+  - title: "VS Code Download"
+    url: "https://code.visualstudio.com/"
+    type: "tool"
+  - title: "Node.js Download"
+    url: "https://nodejs.org/"
+    type: "tool"
+  - title: "Git Download"
+    url: "https://git-scm.com/"
+    type: "tool"
+  - title: "VS Code Extensions for Web Development"
+    url: "https://marketplace.visualstudio.com/search?target=VSCode&category=Programming%20Languages&sortBy=Relevance"
+    type: "article"
+---
+
+# Setting Up Your Development Environment
+
+Before you start coding, you need to set up your development environment with the right tools. This lesson will guide you through installing and configuring everything you need.
+
+## Essential Tools
+
+### 1. Code Editor: Visual Studio Code
+
+**Visual Studio Code (VS Code)** is the most popular code editor for web development. It's free, powerful, and has excellent support for web technologies.
+
+**Installation Steps:**
+1. Go to [code.visualstudio.com](https://code.visualstudio.com/)
+2. Download the version for your operating system
+3. Install and launch VS Code
+
+**Recommended Extensions:**
+- **Live Server**: Preview HTML files in the browser
+- **Prettier**: Format your code automatically
+- **ESLint**: Find and fix code issues
+- **Auto Rename Tag**: Automatically rename HTML tags
+- **Bracket Pair Colorizer**: Color-code matching brackets
+
+### 2. Node.js and npm
+
+**Node.js** is a JavaScript runtime that allows you to run JavaScript outside the browser. It also comes with **npm** (Node Package Manager) for installing packages.
+
+**Installation Steps:**
+1. Go to [nodejs.org](https://nodejs.org/)
+2. Download the LTS (Long Term Support) version
+3. Install Node.js (npm comes with it)
+4. Verify installation by opening terminal/command prompt:
+   ```bash
+   node --version
+   npm --version
+   ```
+
+### 3. Git and GitHub
+
+**Git** is a version control system that helps you track changes in your code. **GitHub** is a platform for hosting Git repositories.
+
+**Installation Steps:**
+1. Go to [git-scm.com](https://git-scm.com/)
+2. Download and install Git for your operating system
+3. Create a GitHub account at [github.com](https://github.com/)
+4. Configure Git with your information:
+   ```bash
+   git config --global user.name "Your Name"
+   git config --global user.email "your.email@example.com"
+   ```
+
+## Setting Up Your Workspace
+
+### 1. Create a Project Folder
+
+Create a dedicated folder for your web development projects:
+
+```bash
+mkdir web-development-projects
+cd web-development-projects
+```
+
+### 2. Open in VS Code
+
+Open your project folder in VS Code:
+1. Launch VS Code
+2. Go to File → Open Folder
+3. Select your project folder
+
+### 3. Create Your First File
+
+Let's create a simple HTML file to test your setup:
+
+1. In VS Code, right-click in the explorer panel
+2. Select "New File"
+3. Name it `index.html`
+4. Add this basic HTML:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My First Web Page</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>Welcome to my first web page!</p>
+</body>
+</html>
+```
+
+### 4. Preview Your Page
+
+With the Live Server extension:
+1. Right-click on `index.html`
+2. Select "Open with Live Server"
+3. Your page will open in your default browser
+
+## Best Practices
+
+### File Organization
+- Keep your projects organized in separate folders
+- Use descriptive file names
+- Create a consistent folder structure
+
+### Version Control
+- Initialize Git repositories for your projects
+- Make regular commits with descriptive messages
+- Push your code to GitHub for backup and sharing
+
+### Code Formatting
+- Use consistent indentation (2 or 4 spaces)
+- Format your code regularly with Prettier
+- Follow naming conventions
+
+## Troubleshooting
+
+### Common Issues
+
+**VS Code not opening files:**
+- Make sure you have the right file associations
+- Try reinstalling VS Code
+
+**Node.js not found:**
+- Restart your terminal after installation
+- Check your system's PATH environment variable
+
+**Git not working:**
+- Verify Git is installed correctly
+- Check your Git configuration
+
+## Next Steps
+
+Now that your environment is set up, you're ready to start coding! In the next lesson, we'll create your first HTML page and learn about the basic structure of web documents.
+
+## Practice Exercise
+
+1. Install all the tools mentioned above
+2. Create a new project folder
+3. Create a simple HTML file with your name and a brief introduction
+4. Open it with Live Server
+5. Take a screenshot and save it for your portfolio
+
+This exercise will help you get comfortable with your development environment before we dive into actual coding. 

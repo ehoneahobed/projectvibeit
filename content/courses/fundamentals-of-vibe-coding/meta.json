@@ -1,0 +1,86 @@
+{
+  "id": "fundamentals-of-vibe-coding",
+  "title": "Fundamentals of Vibe Coding",
+  "description": "Master the basics of modern web development with hands-on projects and real-world applications. This comprehensive course covers everything from HTML and CSS to JavaScript, React, and modern development practices.",
+  "slug": "fundamentals-of-vibe-coding",
+  "order": 1,
+  "isPublished": true,
+  "estimatedHours": 120,
+  "prerequisites": [],
+  "modules": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started with Web Development",
+      "description": "Learn the fundamentals of web development and set up your development environment.",
+      "slug": "getting-started",
+      "order": 1,
+      "estimatedHours": 15,
+      "lessons": [
+        {
+          "id": "introduction-to-web-development",
+          "title": "Introduction to Web Development",
+          "description": "Learn what web development is and how the web works.",
+          "slug": "introduction-to-web-development",
+          "order": 1,
+          "type": "lesson",
+          "isPublished": true
+        },
+        {
+          "id": "setting-up-environment",
+          "title": "Setting Up Your Development Environment",
+          "description": "Install and configure the tools you need for web development.",
+          "slug": "setting-up-environment",
+          "order": 2,
+          "type": "lesson",
+          "isPublished": true
+        },
+        {
+          "id": "first-html-page",
+          "title": "Creating Your First HTML Page",
+          "description": "Write your first HTML code and understand the basics of web structure.",
+          "slug": "first-html-page",
+          "order": 3,
+          "type": "project",
+          "isPublished": true
+        }
+      ]
+    },
+    {
+      "id": "html-fundamentals",
+      "title": "HTML Fundamentals",
+      "description": "Master HTML structure, semantic elements, and best practices.",
+      "slug": "html-fundamentals",
+      "order": 2,
+      "estimatedHours": 20,
+      "lessons": [
+        {
+          "id": "html-structure",
+          "title": "HTML Document Structure",
+          "description": "Understand the basic structure of HTML documents.",
+          "slug": "html-structure",
+          "order": 1,
+          "type": "lesson",
+          "isPublished": true
+        },
+        {
+          "id": "semantic-elements",
+          "title": "Semantic HTML Elements",
+          "description": "Learn to use semantic elements for better accessibility and SEO.",
+          "slug": "semantic-elements",
+          "order": 2,
+          "type": "lesson",
+          "isPublished": true
+        },
+        {
+          "id": "personal-portfolio",
+          "title": "Personal Portfolio Website",
+          "description": "Build a complete personal portfolio using HTML.",
+          "slug": "personal-portfolio",
+          "order": 3,
+          "type": "project",
+          "isPublished": true
+        }
+      ]
+    }
+  ]
+} 
