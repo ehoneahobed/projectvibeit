@@ -381,31 +381,13 @@ export default function PortalLayout({
                 <Button variant="outline" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
                   <span className="sr-only">Notifications</span>
-                  <span className="border-background absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 bg-red-500" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <div className="flex flex-col">
-                    <p className="font-semibold">New user registered</p>
-                    <p className="text-muted-foreground text-xs">
-                      A new user has signed up.
-                    </p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <div className="flex flex-col">
-                    <p className="font-semibold">Password changed</p>
-                    <p className="text-muted-foreground text-xs">
-                      Your password was recently changed.
-                    </p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-primary text-center">
-                  View all notifications
+                <DropdownMenuItem className="text-muted-foreground text-center">
+                  No new notifications
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

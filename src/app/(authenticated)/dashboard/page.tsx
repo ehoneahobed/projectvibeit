@@ -11,20 +11,14 @@ import {
   TrendingUp, 
   Calendar,
   ArrowRight,
-  Play,
   CheckCircle,
-  Star,
   Users,
-  Target,
   Award,
-  Zap
 } from "lucide-react"
 import { auth } from "@/lib/auth/auth"
 import { redirect } from "next/navigation"
 import { getUserProgress } from "@/lib/progress-actions"
 import { getPublishedCourses } from "@/lib/content"
-import { calculateCourseProgress, getCompletedLessonsCount } from "@/lib/progress"
-import { formatDistanceToNow } from "date-fns"
 import type { IProgress } from "@/lib/models/User"
 import type { CourseMeta } from "@/lib/content"
 
@@ -45,15 +39,15 @@ function calculateUserStats(userProgress: IProgress[], courses: CourseMeta[]) {
   const activeCourses = userProgress.length
   const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
-  // Calculate streak (simplified - in a real app you'd track daily activity)
-  const streak = Math.min(7, Math.floor(completedLessons / 2)) // Mock calculation
+  // Calculate study time estimate (30 minutes per lesson)
+  const estimatedStudyTime = Math.round(completedLessons * 0.5)
 
   return {
     totalLessons,
     completedLessons,
     activeCourses,
     overallProgress,
-    streak
+    estimatedStudyTime
   }
 }
 
@@ -137,15 +131,15 @@ function generateRecentActivity(userProgress: IProgress[], courses: CourseMeta[]
       const recentCompleted = progress.completedLessons.slice(-3)
       recentCompleted.forEach((lessonId: string) => {
         // Find lesson details
-        for (const module of course.modules) {
-          const lesson = module.lessons.find((l) => l.id === lessonId)
+        for (const courseModule of course.modules) {
+          const lesson = courseModule.lessons.find((l) => l.id === lessonId)
           if (lesson) {
             activities.push({
               id: `${lessonId}-completed`,
               type: "lesson_completed",
               title: `Completed: ${lesson.title}`,
               course: course.title,
-              timestamp: "2 hours ago", // Mock timestamp
+              timestamp: "Recently", // Simplified timestamp
               icon: CheckCircle
             })
             break
@@ -161,7 +155,7 @@ function generateRecentActivity(userProgress: IProgress[], courses: CourseMeta[]
 /**
  * Generate achievements based on user progress
  */
-function generateAchievements(userProgress: IProgress[], courses: CourseMeta[]) {
+function generateAchievements(userProgress: IProgress[], _courses: CourseMeta[]) {
   const totalCompleted = userProgress.reduce((acc, p) => acc + p.completedLessons.length, 0)
   const activeCourses = userProgress.length
 
@@ -175,10 +169,10 @@ function generateAchievements(userProgress: IProgress[], courses: CourseMeta[]) 
     },
     {
       id: 2,
-      name: "Week Warrior",
-      description: "Learn for 7 days in a row",
+      name: "Dedicated Learner",
+      description: "Complete 10 lessons",
       icon: "🔥",
-      earned: totalCompleted >= 7
+      earned: totalCompleted >= 10
     },
     {
       id: 3,
@@ -243,8 +237,8 @@ export default async function DashboardPage() {
                 {stats.completedLessons > 20 ? 'Advanced' : stats.completedLessons > 10 ? 'Intermediate' : 'Beginner'}
               </Badge>
               <Badge variant="outline" className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                {stats.streak} day streak
+                <Clock className="w-4 h-4" />
+                {stats.estimatedStudyTime}h studied
               </Badge>
             </div>
           </div>
@@ -286,10 +280,10 @@ export default async function DashboardPage() {
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                      {stats.streak}
+                      {stats.estimatedStudyTime}
                     </div>
                     <div className="text-sm text-slate-600 dark:text-slate-300">
-                      Day Streak
+                      Hours Studied
                     </div>
                   </div>
                 </div>
@@ -453,13 +447,13 @@ export default async function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600 dark:text-slate-400">This Week</span>
                     <span className="text-sm font-medium text-slate-900 dark:text-white">
-                      {Math.floor(stats.streak * 0.3)}h {Math.floor(stats.streak * 0.3 * 60) % 60}m
+                      {Math.floor(stats.estimatedStudyTime * 0.2)}h {Math.floor(stats.estimatedStudyTime * 0.2 * 60) % 60}m
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Average/Day</span>
                     <span className="text-sm font-medium text-slate-900 dark:text-white">
-                      {stats.streak > 0 ? Math.floor((stats.completedLessons / stats.streak) * 0.5) : 0}h {Math.floor((stats.completedLessons / Math.max(stats.streak, 1)) * 0.5 * 60) % 60}m
+                      {stats.completedLessons > 0 ? Math.floor((stats.estimatedStudyTime / Math.max(stats.completedLessons, 1)) * 0.5) : 0}h {Math.floor((stats.estimatedStudyTime / Math.max(stats.completedLessons, 1)) * 0.5 * 60) % 60}m
                     </span>
                   </div>
                 </div>
