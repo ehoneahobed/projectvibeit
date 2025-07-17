@@ -23,6 +23,7 @@ Our platform uses a **hierarchical file-based approach** that automatically load
 - **Handles navigation** between lessons automatically
 - **Supports rich content** including resources, assignments, and interactive elements
 - **Maintains order** through metadata fields
+- **Generates overview pages** automatically from course metadata
 
 ### Key Benefits
 
@@ -31,6 +32,7 @@ Our platform uses a **hierarchical file-based approach** that automatically load
 - ✅ **Scalable** - Easy to add new courses, modules, and lessons
 - ✅ **Ordered navigation** - Automatic sequencing based on metadata
 - ✅ **Rich content support** - Resources, assignments, code blocks, and more
+- ✅ **Automatic overview pages** - Course overviews generated from metadata
 
 ## File Structure
 
@@ -54,6 +56,20 @@ content/
 - **Lesson files**: Use kebab-case with `.mdx` extension (e.g., `introduction-to-web-development.mdx`)
 
 ## Adding New Content
+
+### Course Pages and Navigation
+
+Each course has three main pages:
+- **Course Page** (`/courses/[courseSlug]`) - Main course landing page with modules and progress
+- **Overview Page** (`/courses/[courseSlug]/overview`) - Detailed course information, curriculum breakdown, and learning objectives
+- **Module Page** (`/courses/[courseSlug]/[moduleSlug]`) - Module-specific page with lessons, progress tracking, and navigation
+
+The overview page is automatically generated from your course metadata and provides:
+- Comprehensive course description and statistics
+- Detailed curriculum breakdown with all modules and lessons
+- Learning objectives and outcomes
+- Prerequisites and course features
+- Instructor information
 
 ### 1. Adding a New Course
 
@@ -152,6 +168,8 @@ Your lesson content here...
   ]
 }
 ```
+
+**Note:** All lesson information you add to the metadata will automatically appear on the course overview page (`/courses/[courseSlug]/overview`), providing students with a comprehensive view of the curriculum.
 
 ## Content Types
 
@@ -314,6 +332,12 @@ pnpm dev
 
 # Navigate to your content
 # http://localhost:3000/courses/[course-slug]/[module-slug]/[lesson-slug]
+
+# Test the overview page
+# http://localhost:3000/courses/[course-slug]/overview
+
+# Test the module page
+# http://localhost:3000/courses/[course-slug]/[module-slug]
 ```
 
 **Check for:**
@@ -322,6 +346,9 @@ pnpm dev
 - ✅ Resources and assignments display correctly
 - ✅ Code examples are properly formatted
 - ✅ Mobile responsiveness
+- ✅ Overview page displays all course information correctly
+- ✅ Course statistics are accurate (modules, lessons, projects count)
+- ✅ Module page shows all lessons and navigation correctly
 
 ### 4. Submit Your Contribution
 
@@ -400,6 +427,8 @@ Closes #[issue-number]
 - **Use descriptive titles** - Make titles clear and engaging
 - **Write compelling descriptions** - Hook readers with brief summaries
 - **Set appropriate types** - Choose the right content type for each lesson
+- **Complete course metadata** - All fields in `meta.json` appear on the overview page
+- **Accurate statistics** - Ensure module counts, lesson counts, and project counts are correct
 
 ### Accessibility
 
@@ -421,6 +450,8 @@ Closes #[issue-number]
 - Check `order` fields are sequential
 - Verify slugs match file names
 - Ensure all metadata is complete
+- Check overview page link works (`/courses/[courseSlug]/overview`)
+- Check module page link works (`/courses/[courseSlug]/[moduleSlug]`)
 
 **Code not highlighting:**
 - Specify language in code blocks
