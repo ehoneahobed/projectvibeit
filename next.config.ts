@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
         tls: false,
         fs: false,
         child_process: false,
+        dns: false,
+        timers: false,
+        "timers/promises": false,
       }
     }
     return config
