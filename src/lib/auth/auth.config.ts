@@ -1,7 +1,3 @@
-"use server"
-
-import { MongoDBAdapter } from "@auth/mongodb-adapter"
-import { MongoClient } from "mongodb"
 import type { NextAuthConfig } from "next-auth"
 import type { Provider } from "next-auth/providers"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -103,10 +99,7 @@ if (process.env.NEXT_PUBLIC_AUTH_EMAIL_ENABLED === "true") {
   )
 }
 
-const client = process.env.DATABASE_URL ? new MongoClient(process.env.DATABASE_URL) : null
-
 export const authConfig: NextAuthConfig = {
-  adapter: client ? MongoDBAdapter(client) : undefined,
   providers,
   session: {
     strategy: "jwt",
