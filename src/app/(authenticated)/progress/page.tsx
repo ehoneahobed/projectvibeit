@@ -2,22 +2,16 @@ import { auth } from "@/lib/auth/auth"
 import { redirect } from "next/navigation"
 import { getUserProgress } from "@/lib/progress-actions"
 import { getPublishedCourses } from "@/lib/content"
-import { calculateCourseProgress, getCompletedLessonsCount } from "@/lib/progress"
+import type { IProgress } from "@/lib/models/User"
+import type { CourseMeta } from "@/lib/content"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { 
   BookOpen, 
   Trophy, 
-  TrendingUp, 
-  Calendar,
-  Clock,
-  Target,
-  CheckCircle,
-  Star,
+  TrendingUp,
   Award,
-  Zap,
   Home
 } from "lucide-react"
 import Link from "next/link"
@@ -25,9 +19,9 @@ import Link from "next/link"
 /**
  * Calculate comprehensive user statistics
  */
-function calculateUserStats(userProgress: any[], courses: any[]) {
+function calculateUserStats(userProgress: IProgress[], courses: CourseMeta[]) {
   const totalLessons = courses.reduce((acc, course) => {
-    return acc + course.modules.reduce((moduleAcc: number, module: any) => {
+    return acc + course.modules.reduce((moduleAcc: number, module) => {
       return moduleAcc + module.lessons.length
     }, 0)
   }, 0)
@@ -56,18 +50,17 @@ function calculateUserStats(userProgress: any[], courses: any[]) {
 /**
  * Get detailed course progress
  */
-function getDetailedCourseProgress(userProgress: any[], courses: any[]) {
+function getDetailedCourseProgress(userProgress: IProgress[], courses: CourseMeta[]) {
   return courses.map(course => {
     const courseProgress = userProgress.find(p => p.courseId === course.slug)
-    const totalLessons = course.modules.reduce((acc: number, module: any) => acc + module.lessons.length, 0)
+    const totalLessons = course.modules.reduce((acc: number, module) => acc + module.lessons.length, 0)
     const completedLessons = courseProgress ? courseProgress.completedLessons.length : 0
     const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
     // Calculate module progress
-    const moduleProgress = course.modules.map((module: any) => {
-      const moduleLessonIds = module.lessons.map((l: any) => l.id)
+    const moduleProgress = course.modules.map((module) => {
       const moduleCompleted = courseProgress ? 
-        module.lessons.filter((l: any) => courseProgress.completedLessons.includes(l.id)).length : 0
+        module.lessons.filter((l) => courseProgress.completedLessons.includes(l.id)).length : 0
       const moduleProgressPercent = module.lessons.length > 0 ? 
         Math.round((moduleCompleted / module.lessons.length) * 100) : 0
 
@@ -92,7 +85,7 @@ function getDetailedCourseProgress(userProgress: any[], courses: any[]) {
 /**
  * Generate achievements based on progress
  */
-function generateAchievements(userProgress: any[], courses: any[]) {
+function generateAchievements(userProgress: IProgress[], _courses: CourseMeta[]) {
   const totalCompleted = userProgress.reduce((acc, p) => acc + p.completedLessons.length, 0)
   const activeCourses = userProgress.length
   const totalStudyTime = Math.round(totalCompleted * 0.5)
@@ -158,7 +151,7 @@ export default async function ProgressPage() {
 
   // Get user progress and courses
   const progressResult = await getUserProgress()
-  const userProgress = progressResult.success ? progressResult.data : []
+  const userProgress = progressResult.success ? progressResult.data || [] : []
   const courses = getPublishedCourses()
 
   // Calculate statistics
@@ -298,7 +291,7 @@ export default async function ProgressPage() {
                       <div className="space-y-3">
                         <h4 className="font-medium text-slate-900 dark:text-white">Module Progress:</h4>
                                                  <div className="grid gap-3">
-                           {course.moduleProgress.map((module: any) => (
+                           {course.moduleProgress.map((module) => (
                              <div key={module.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                               <div className="flex-1">
                                 <div className="font-medium text-sm text-slate-900 dark:text-white">

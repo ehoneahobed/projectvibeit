@@ -9,7 +9,6 @@ import { FloatingCompletionButton } from "@/components/floating-completion-butto
 import { 
   getLessonContent, 
   getLessonNavigation,
-  getPublishedCourses 
 } from "@/lib/content"
 import { auth } from "@/lib/auth/auth"
 import { getUserProgress } from "@/lib/progress-actions"
@@ -19,7 +18,6 @@ import {
   ChevronRight, 
   BookOpen, 
   ExternalLink, 
-  Play, 
   Code, 
   FileText,
   CheckCircle,
@@ -40,6 +38,18 @@ interface LessonPageProps {
     moduleSlug: string
     lessonSlug: string
   }>
+}
+
+// Type for navigation lesson objects that include moduleSlug
+interface NavigationLesson {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  type: 'lesson' | 'project' | 'assignment'
+  isPublished: boolean
+  moduleSlug: string
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
@@ -65,7 +75,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   // Get user progress
   const progressResult = await getUserProgress()
-  const userProgress = progressResult.success ? progressResult.data : []
+  const userProgress = progressResult.success ? progressResult.data || [] : []
   const isCompleted = isLessonCompleted(userProgress, courseSlug, current.id)
 
   const getResourceIcon = (type: string) => {
@@ -264,12 +274,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 previousLesson={previous ? { 
                   slug: previous.slug, 
                   title: previous.title,
-                  moduleSlug: (previous as any).moduleSlug || moduleSlug
+                  moduleSlug: (previous as NavigationLesson).moduleSlug || moduleSlug
                 } : null}
                 nextLesson={next ? { 
                   slug: next.slug, 
                   title: next.title,
-                  moduleSlug: (next as any).moduleSlug || moduleSlug
+                  moduleSlug: (next as NavigationLesson).moduleSlug || moduleSlug
                 } : null}
                 moduleTitle={module.title}
                 courseTitle={course.title}
@@ -280,7 +290,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <div className="flex items-center justify-between mt-8">
               {previous ? (
                 <Button asChild variant="outline">
-                  <Link href={`/courses/${courseSlug}/${(previous as any).moduleSlug || moduleSlug}/${previous.slug}`}>
+                  <Link href={`/courses/${courseSlug}/${(previous as NavigationLesson).moduleSlug || moduleSlug}/${previous.slug}`}>
                     <ChevronLeft className="w-4 h-4 mr-2" />
                     Previous Lesson
                   </Link>
@@ -296,7 +306,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
               
               {next ? (
                 <Button asChild>
-                  <Link href={`/courses/${courseSlug}/${(next as any).moduleSlug || moduleSlug}/${next.slug}`}>
+                  <Link href={`/courses/${courseSlug}/${(next as NavigationLesson).moduleSlug || moduleSlug}/${next.slug}`}>
                     Next Lesson
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Link>
@@ -402,7 +412,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
         nextLesson={next ? { 
           slug: next.slug, 
           title: next.title,
-          moduleSlug: (next as any).moduleSlug || moduleSlug
+          moduleSlug: (next as NavigationLesson).moduleSlug || moduleSlug
         } : null}
       />
     </div>

@@ -2,7 +2,43 @@ import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
 import { Course } from "@/lib/models"
 
-export async function GET(request: NextRequest) {
+interface DatabaseModule {
+  _id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  estimatedHours: number
+  lessons?: DatabaseLesson[]
+}
+
+interface DatabaseLesson {
+  _id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  type: string
+  isPublished: boolean
+}
+
+interface TransformedCourse {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  isPublished: boolean
+  estimatedHours: number
+  prerequisites: string[]
+  modules: number
+  lessons: number
+  projects: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export async function GET(_request: NextRequest) {
   try {
     await connectDB()
     
@@ -17,16 +53,28 @@ export async function GET(request: NextRequest) {
         }
       })
       .sort({ order: 1 })
-      .lean()
+      .lean() as unknown as Array<{
+        _id: string
+        title: string
+        description: string
+        slug: string
+        order: number
+        isPublished: boolean
+        estimatedHours: number
+        prerequisites: string[]
+        modules: DatabaseModule[]
+        createdAt: Date
+        updatedAt: Date
+      }>
 
     // Transform the data to include calculated fields
-    const transformedCourses = courses.map(course => {
-      const totalLessons = course.modules.reduce((acc: number, module: any) => {
+    const transformedCourses: TransformedCourse[] = courses.map(course => {
+      const totalLessons = course.modules.reduce((acc: number, module) => {
         return acc + (module.lessons?.length || 0)
       }, 0)
       
-      const totalProjects = course.modules.reduce((acc: number, module: any) => {
-        return acc + (module.lessons?.filter((lesson: any) => lesson.type === 'project').length || 0)
+      const totalProjects = course.modules.reduce((acc: number, module) => {
+        return acc + (module.lessons?.filter((lesson) => lesson.type === 'project').length || 0)
       }, 0)
 
       return {

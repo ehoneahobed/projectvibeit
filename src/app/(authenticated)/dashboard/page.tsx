@@ -200,7 +200,7 @@ export default async function DashboardPage() {
 
   // Get user progress and courses
   const progressResult = await getUserProgress()
-  const userProgress = progressResult.success ? progressResult.data : []
+  const userProgress = progressResult.success ? progressResult.data || [] : []
   const courses = getPublishedCourses()
 
   // Calculate user statistics

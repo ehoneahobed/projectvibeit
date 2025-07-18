@@ -2,12 +2,27 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth/auth"
 import { connectDB } from "@/lib/db"
 import { User } from "@/lib/models"
+import type { IProgress } from "@/lib/models/User"
+
+interface DatabaseUser {
+  _id: string
+  progress: IProgress[]
+}
+
+interface SerializedProgress {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedLessons: string[]
+  completedProjects: string[]
+  totalProgress: number
+}
 
 /**
  * GET /api/progress
  * Get user's progress for all courses
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -19,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB()
     
-    const user = await User.findById(session.user.id, { progress: 1 }).lean()
+    const user = await User.findById(session.user.id, { progress: 1 }).lean() as unknown as DatabaseUser
     if (!user) {
       return NextResponse.json(
         { success: false, error: "User not found" },
@@ -28,8 +43,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Ensure proper serialization of progress data
-    const progress = (user as any).progress || []
-    const serializedProgress = progress.map((p: any) => ({
+    const progress = user.progress || []
+    const serializedProgress: SerializedProgress[] = progress.map((p) => ({
       courseId: p.courseId,
       moduleId: p.moduleId,
       lessonId: p.lessonId,
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find existing progress for this course
-    let courseProgress = user.progress.find((p: any) => p.courseId === courseId)
+    let courseProgress = user.progress.find((p: IProgress) => p.courseId === courseId)
     
     if (!courseProgress) {
       // Create new progress entry for this course

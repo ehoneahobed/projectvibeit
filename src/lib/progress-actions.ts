@@ -3,6 +3,22 @@
 import { auth } from "@/lib/auth/auth"
 import { connectDB } from "@/lib/db"
 import { User } from "@/lib/models"
+import type { IProgress } from "@/lib/models/User"
+
+interface DatabaseUser {
+  _id: string
+  progress: IProgress[]
+}
+
+interface SerializedProgress {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedLessons: string[]
+  completedProjects: string[]
+  totalProgress: number
+  completedAt?: Date
+}
 
 /**
  * Get user's progress for all courses
@@ -16,20 +32,21 @@ export async function getUserProgress() {
 
     await connectDB()
     
-    const user = await User.findById(session.user.id, { progress: 1 }).lean()
+    const user = await User.findById(session.user.id, { progress: 1 }).lean() as unknown as DatabaseUser
     if (!user) {
       return { success: false, error: "User not found", data: null }
     }
 
     // Ensure proper serialization of progress data
-    const progress = (user as any).progress || []
-    const serializedProgress = progress.map((p: any) => ({
+    const progress = user.progress || []
+    const serializedProgress: SerializedProgress[] = progress.map((p) => ({
       courseId: p.courseId,
       moduleId: p.moduleId,
       lessonId: p.lessonId,
       completedLessons: p.completedLessons || [],
       completedProjects: p.completedProjects || [],
-      totalProgress: p.totalProgress || 0
+      totalProgress: p.totalProgress || 0,
+      completedAt: p.completedAt
     }))
 
     return { success: true, data: serializedProgress, error: null }
@@ -61,7 +78,7 @@ export async function completeLesson(
     }
 
     // Find existing progress for this course
-    let courseProgress = user.progress.find((p: any) => p.courseId === courseId)
+    let courseProgress = user.progress.find((p: IProgress) => p.courseId === courseId)
     
     if (!courseProgress) {
       // Create new progress entry for this course
@@ -103,7 +120,8 @@ export async function completeLesson(
       lessonId: courseProgress.lessonId,
       completedLessons: courseProgress.completedLessons || [],
       completedProjects: courseProgress.completedProjects || [],
-      totalProgress: courseProgress.totalProgress || 0
+      totalProgress: courseProgress.totalProgress || 0,
+      completedAt: courseProgress.completedAt
     }
 
     return { success: true, data: serializedProgress, error: null }
@@ -135,7 +153,7 @@ export async function uncompleteLesson(
     }
 
     // Find existing progress for this course
-    const courseProgress = user.progress.find((p: any) => p.courseId === courseId)
+    const courseProgress = user.progress.find((p: IProgress) => p.courseId === courseId)
     
     if (!courseProgress) {
       return { success: false, error: "No progress found for this course", data: null }
@@ -159,7 +177,8 @@ export async function uncompleteLesson(
       lessonId: courseProgress.lessonId,
       completedLessons: courseProgress.completedLessons || [],
       completedProjects: courseProgress.completedProjects || [],
-      totalProgress: courseProgress.totalProgress || 0
+      totalProgress: courseProgress.totalProgress || 0,
+      completedAt: courseProgress.completedAt
     }
 
     return { success: true, data: serializedProgress, error: null }

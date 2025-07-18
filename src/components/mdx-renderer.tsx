@@ -1,6 +1,4 @@
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,10 +10,14 @@ import {
   Book,
   Code,
   Github,
-  Copy,
-  Check
 } from 'lucide-react'
 import { CodeBlockWithCopy } from './code-block-with-copy'
+
+interface MDXComponentProps {
+  children?: React.ReactNode | string
+  className?: string
+  [key: string]: unknown
+}
 
 
 
@@ -173,12 +175,12 @@ function AssignmentCard({
 
 // MDX components configuration
 const components = {
-  pre: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  code: ({ children, className, ...props }: any) => {
+  pre: ({ children, ...props }: MDXComponentProps) => <div {...props}>{children}</div>,
+  code: ({ children, className, ...props }: MDXComponentProps) => {
     if (className) {
       return (
         <CodeBlockWithCopy className={className}>
-          {children}
+          {String(children)}
         </CodeBlockWithCopy>
       )
     }

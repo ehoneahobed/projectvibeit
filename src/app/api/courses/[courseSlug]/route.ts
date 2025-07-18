@@ -8,6 +8,71 @@ interface CourseParams {
   }
 }
 
+interface TransformedLesson {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  type: string
+  isPublished: boolean
+  hasContent: boolean
+  hasResources: boolean
+  hasAssignment: boolean
+}
+
+interface TransformedModule {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  estimatedHours: number
+  lessons: TransformedLesson[]
+  totalLessons: number
+  completedLessons: number
+}
+
+interface TransformedCourse {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  isPublished: boolean
+  estimatedHours: number
+  prerequisites: string[]
+  modules: TransformedModule[]
+  totalModules: number
+  totalLessons: number
+  totalProjects: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface DatabaseModule {
+  _id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  estimatedHours: number
+  lessons?: DatabaseLesson[]
+}
+
+interface DatabaseLesson {
+  _id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  type: string
+  isPublished: boolean
+  content?: string
+  resources?: Array<{ title: string; url: string; type: string }>
+  assignment?: Record<string, unknown>
+}
+
 export async function GET(request: NextRequest, { params }: CourseParams) {
   try {
     await connectDB()
@@ -28,7 +93,19 @@ export async function GET(request: NextRequest, { params }: CourseParams) {
       },
       options: { sort: { order: 1 } }
     })
-    .lean() as any
+    .lean() as unknown as {
+      _id: string
+      title: string
+      description: string
+      slug: string
+      order: number
+      isPublished: boolean
+      estimatedHours: number
+      prerequisites: string[]
+      modules?: DatabaseModule[]
+      createdAt: Date
+      updatedAt: Date
+    }
 
     if (!course) {
       return NextResponse.json(
@@ -41,7 +118,7 @@ export async function GET(request: NextRequest, { params }: CourseParams) {
     }
 
     // Transform the data to include calculated fields
-    const transformedCourse = {
+    const transformedCourse: TransformedCourse = {
       id: course._id,
       title: course.title,
       description: course.description,
@@ -50,14 +127,14 @@ export async function GET(request: NextRequest, { params }: CourseParams) {
       isPublished: course.isPublished,
       estimatedHours: course.estimatedHours,
       prerequisites: course.prerequisites,
-      modules: (course.modules || []).map((module: any) => ({
+      modules: (course.modules || []).map((module) => ({
         id: module._id,
         title: module.title,
         description: module.description,
         slug: module.slug,
         order: module.order,
         estimatedHours: module.estimatedHours,
-        lessons: (module.lessons || []).map((lesson: any) => ({
+        lessons: (module.lessons || []).map((lesson) => ({
           id: lesson._id,
           title: lesson.title,
           description: lesson.description,
@@ -66,18 +143,18 @@ export async function GET(request: NextRequest, { params }: CourseParams) {
           type: lesson.type,
           isPublished: lesson.isPublished,
           hasContent: !!lesson.content,
-          hasResources: lesson.resources?.length > 0,
+          hasResources: (lesson.resources?.length ?? 0) > 0,
           hasAssignment: !!lesson.assignment
         })),
         totalLessons: (module.lessons || []).length,
         completedLessons: 0 // This will be calculated based on user progress
       })),
       totalModules: (course.modules || []).length,
-      totalLessons: (course.modules || []).reduce((acc: number, module: any) => {
+      totalLessons: (course.modules || []).reduce((acc: number, module) => {
         return acc + ((module.lessons || []).length)
       }, 0),
-      totalProjects: (course.modules || []).reduce((acc: number, module: any) => {
-        return acc + ((module.lessons || []).filter((lesson: any) => lesson.type === 'project').length)
+      totalProjects: (course.modules || []).reduce((acc: number, module) => {
+        return acc + ((module.lessons || []).filter((lesson) => lesson.type === 'project').length)
       }, 0),
       createdAt: course.createdAt,
       updatedAt: course.updatedAt

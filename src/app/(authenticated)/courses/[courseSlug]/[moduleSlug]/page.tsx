@@ -59,7 +59,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
   // Get user progress
   const progressResult = await getUserProgress()
-  const userProgress = progressResult.success ? progressResult.data : []
+  const userProgress = progressResult.success ? progressResult.data || [] : []
   
   const totalLessons = courseModule.lessons.length
   const totalProjects = courseModule.lessons.filter(lesson => lesson.type === 'project').length

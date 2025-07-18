@@ -11,13 +11,13 @@ import {
   Trophy,
   MessageSquare,
   Award,
-  Shield
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export interface MenuItem {
   label: string
   href?: string
-  icon: any
+  icon: LucideIcon
   subMenu?: SubMenuItem[]
   requiredRole?: 'admin' | 'contributor' | 'any'
 }
@@ -25,7 +25,7 @@ export interface MenuItem {
 export interface SubMenuItem {
   label: string
   href: string
-  icon: any
+  icon: LucideIcon
   requiredRole?: 'admin' | 'contributor' | 'any'
 }
 

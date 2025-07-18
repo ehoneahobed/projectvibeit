@@ -1,10 +1,24 @@
 import type { IProgress } from "@/lib/models/User"
 
+// Type for serialized progress data from API
+interface SerializedProgress {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedLessons: string[]
+  completedProjects: string[]
+  totalProgress: number
+  completedAt?: Date
+}
+
+// Union type for both IProgress and SerializedProgress
+type ProgressData = IProgress | SerializedProgress
+
 /**
  * Calculate progress percentage for a course
  */
 export function calculateCourseProgress(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string,
   totalLessons: number
 ): number {
@@ -20,7 +34,7 @@ export function calculateCourseProgress(
  * Calculate progress percentage for a module
  */
 export function calculateModuleProgress(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string,
   moduleLessons: string[]
 ): number {
@@ -40,7 +54,7 @@ export function calculateModuleProgress(
  * Check if a lesson is completed
  */
 export function isLessonCompleted(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string,
   lessonId: string
 ): boolean {
@@ -56,7 +70,7 @@ export function isLessonCompleted(
  * Get completed lessons count for a course
  */
 export function getCompletedLessonsCount(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string
 ): number {
   const courseProgress = userProgress.find(p => p.courseId === courseId)
@@ -71,7 +85,7 @@ export function getCompletedLessonsCount(
  * Get completed lessons count for a module
  */
 export function getCompletedModuleLessonsCount(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string,
   moduleLessons: string[]
 ): number {
@@ -89,7 +103,7 @@ export function getCompletedModuleLessonsCount(
  * Check if a course is completed
  */
 export function isCourseCompleted(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string,
   totalLessons: number
 ): boolean {
@@ -105,7 +119,7 @@ export function isCourseCompleted(
  * Check if a lesson can be accessed (previous lesson completed or first lesson)
  */
 export function canAccessLesson(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string,
   lessonIndex: number,
   moduleLessons: string[]
@@ -122,8 +136,8 @@ export function canAccessLesson(
  * Get user's current progress for a specific course
  */
 export function getCourseProgress(
-  userProgress: IProgress[],
+  userProgress: ProgressData[],
   courseId: string
-): IProgress | null {
+): ProgressData | null {
   return userProgress.find(p => p.courseId === courseId) || null
 } 

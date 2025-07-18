@@ -7,7 +7,7 @@ import { User } from "@/lib/models"
  * GET /api/auth/check-role
  * Check the current user's role for authorization
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {

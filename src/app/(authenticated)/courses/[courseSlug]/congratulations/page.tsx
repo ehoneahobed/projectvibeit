@@ -1,11 +1,9 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { 
   Trophy, 
-  Star, 
   CheckCircle, 
   Calendar, 
   Clock, 
@@ -22,6 +20,7 @@ import { getCourseBySlug } from "@/lib/content"
 import { auth } from "@/lib/auth/auth"
 import { getUserProgress } from "@/lib/progress-actions"
 import { getCompletedLessonsCount, calculateCourseProgress, isCourseCompleted } from "@/lib/progress"
+import type { IProgress } from "@/lib/models/User"
 import { notFound, redirect } from "next/navigation"
 
 interface CongratulationsPageProps {
@@ -46,7 +45,7 @@ export default async function CongratulationsPage({ params }: CongratulationsPag
 
   // Get user progress
   const progressResult = await getUserProgress()
-  const userProgress = progressResult.success ? progressResult.data : []
+  const userProgress = progressResult.success ? progressResult.data || [] : []
   
   const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
   const completedLessons = getCompletedLessonsCount(userProgress, courseSlug)
@@ -62,16 +61,15 @@ export default async function CongratulationsPage({ params }: CongratulationsPag
     acc + module.lessons.filter(lesson => lesson.type === 'project').length, 0
   )
   const completedProjects = course.modules.reduce((acc, module) => {
-    const moduleLessonIds = module.lessons.map(lesson => lesson.id)
     return acc + module.lessons.filter(lesson => 
-      lesson.type === 'project' && userProgress.some((p: any) => 
+      lesson.type === 'project' && userProgress.some((p: IProgress) => 
         p.courseId === courseSlug && p.completedLessons.includes(lesson.id)
       )
     ).length
   }, 0)
 
   // Get completion date from progress
-  const courseProgressData = userProgress.find((p: any) => p.courseId === courseSlug)
+  const courseProgressData = userProgress.find((p: IProgress) => p.courseId === courseSlug)
   const completionDate = courseProgressData?.completedAt ? new Date(courseProgressData.completedAt) : new Date()
   const estimatedHours = Math.ceil(totalLessons * 0.5) // Rough estimate
 
@@ -87,7 +85,7 @@ export default async function CongratulationsPage({ params }: CongratulationsPag
             Congratulations! 🎉
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-300 mb-2">
-            You've successfully completed
+            You&apos;ve successfully completed
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
             {course.title}
@@ -198,10 +196,10 @@ export default async function CongratulationsPage({ params }: CongratulationsPag
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-600" />
-              Skills You've Acquired
+              Skills You&apos;ve Acquired
             </CardTitle>
             <CardDescription>
-              Here are the key skills and technologies you've mastered
+              Here are the key skills and technologies you&apos;ve mastered
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -223,7 +221,7 @@ export default async function CongratulationsPage({ params }: CongratulationsPag
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ArrowRight className="w-5 h-5 text-blue-600" />
-              What's Next?
+              What&apos;s Next?
             </CardTitle>
             <CardDescription>
               Continue your learning journey with these next steps
