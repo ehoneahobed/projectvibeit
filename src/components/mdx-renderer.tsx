@@ -12,6 +12,9 @@ import {
   Github,
 } from 'lucide-react'
 import { CodeBlockWithCopy } from './code-block-with-copy'
+import { LessonQuiz, LegacyQuizQuestion, LegacyQuizOption } from './lesson-quiz'
+import { LearningObjectives, LearningObjective } from './learning-objectives'
+import { ProjectSection } from './project-section'
 
 interface MDXComponentProps {
   children?: React.ReactNode | string
@@ -19,7 +22,29 @@ interface MDXComponentProps {
   [key: string]: unknown
 }
 
-
+// Custom H2 component with separator
+function CustomH2({ children, ...props }: MDXComponentProps) {
+  return (
+    <div className="mt-8 mb-6">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-300 dark:border-slate-600"></div>
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-slate-500 dark:text-slate-400">
+            Section
+          </span>
+        </div>
+      </div>
+      <h2 
+        className="text-2xl font-bold text-foreground scroll-mt-20"
+        {...props}
+      >
+        {children}
+      </h2>
+    </div>
+  )
+}
 
 interface ResourceCardProps {
   title: string
@@ -193,8 +218,15 @@ const components = {
       </code>
     )
   },
+  h2: CustomH2,
   ResourceCard,
   AssignmentCard,
+  LessonQuiz,
+  QuizQuestion: LegacyQuizQuestion,
+  QuizOption: LegacyQuizOption,
+  LearningObjectives,
+  LearningObjective,
+  ProjectSection,
 }
 
 interface MDXRendererProps {

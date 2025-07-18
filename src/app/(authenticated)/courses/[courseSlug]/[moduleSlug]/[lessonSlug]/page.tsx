@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MDXRenderer } from "@/components/mdx-renderer"
 import { LessonPageClient } from "@/components/lesson-page-client"
+import { LessonQuizSection } from "@/components/lesson-quiz-section"
+import { getQuizData } from "@/lib/quiz-loader"
 import { 
   getLessonContent, 
   getLessonNavigation,
@@ -70,20 +72,28 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
       lesson.title.toLowerCase(),
       courseModule.title.toLowerCase(),
       course.title.toLowerCase(),
-      "free coding lesson",
-      "online programming tutorial",
-      "web development lesson",
-      "AI-assisted coding",
-      "programming education",
-      "coding tutorial",
-      "software development lesson",
       "learn to code",
-      "programming course"
+      "project vibe it",
+      "project vibe it course",
+      "project vibe it tutorial",
+      "project vibe it lesson",
+      "project vibe it project",
+      "project vibe it assignment",
+      "project vibe it quiz",
+      "programming course",
+      "vibe coding",
+      "vibe coding course",
+      "vibe coding tutorial",
+      "vibe coding lesson",
+      "vibe coding project",
+      "vibe coding assignment",
+      "vibe coding quiz",
+      "vibe coding learning objectives",
     ],
     openGraph: {
       title: `${lesson.title} - ${courseModule.title} | ${course.title}`,
       description: `${lesson.description} Part ${lessonNumber} of ${totalLessonsInModule} in the ${courseModule.title} module. Learn ${course.title} for free on VibeIt.`,
-      url: `https://vibeit.com/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`,
+      url: `https://projectvibeit.com/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`,
       siteName: "VibeIt",
       images: [
         {
@@ -103,7 +113,7 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
       images: [`/og-lesson-${courseSlug}-${moduleSlug}-${lessonSlug}.png`],
     },
     alternates: {
-      canonical: `https://vibeit.com/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`,
+      canonical: `https://projectvibeit.com/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`,
     },
   }
 }
@@ -153,6 +163,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const progressResult = await getUserProgress()
   const userProgress = progressResult.success ? progressResult.data || [] : []
   const isCompleted = isLessonCompleted(userProgress, courseSlug, current.id)
+
+  // Load quiz data
+  const quizData = getQuizData(courseSlug, moduleSlug, lessonSlug)
 
   const getResourceIcon = (type: string) => {
     switch (type) {
@@ -243,6 +256,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quiz Section */}
+            <div className="mt-8">
+              <LessonQuizSection 
+                quizData={quizData}
+                lessonSlug={lessonSlug}
+              />
+            </div>
 
             {/* Assignment Section */}
             {meta.assignment && (

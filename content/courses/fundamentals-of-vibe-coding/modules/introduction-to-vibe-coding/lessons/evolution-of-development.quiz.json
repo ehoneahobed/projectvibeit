@@ -1,0 +1,163 @@
+{
+  "id": "fundamentals-of-vibe-coding-introduction-to-vibe-coding-evolution-of-development",
+  "title": "The Evolution of Development",
+  "description": "Test your understanding of how development practices have evolved over time.",
+  "questions": [
+    {
+      "id": "question-0",
+      "question": "What was the primary programming paradigm in the 1960s and 1970s?",
+      "options": [
+        {
+          "id": "question-0-option-0",
+          "text": "Object-Oriented Programming",
+          "isCorrect": false
+        },
+        {
+          "id": "question-0-option-1",
+          "text": "Procedural Programming",
+          "isCorrect": true
+        },
+        {
+          "id": "question-0-option-2",
+          "text": "Functional Programming",
+          "isCorrect": false
+        },
+        {
+          "id": "question-0-option-3",
+          "text": "Event-Driven Programming",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-1",
+      "question": "Which development methodology emerged in the 1990s as a response to heavy, documentation-heavy processes?",
+      "options": [
+        {
+          "id": "question-1-option-0",
+          "text": "Waterfall",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-1",
+          "text": "Agile",
+          "isCorrect": true
+        },
+        {
+          "id": "question-1-option-2",
+          "text": "Spiral",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-3",
+          "text": "RAD",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-2",
+      "question": "What major shift occurred in the 2000s that made development more accessible?",
+      "options": [
+        {
+          "id": "question-2-option-0",
+          "text": "The rise of compiled languages",
+          "isCorrect": false
+        },
+        {
+          "id": "question-2-option-1",
+          "text": "The emergence of interpreted languages and frameworks",
+          "isCorrect": true
+        },
+        {
+          "id": "question-2-option-2",
+          "text": "The decline of the internet",
+          "isCorrect": false
+        },
+        {
+          "id": "question-2-option-3",
+          "text": "The end of open source",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-3",
+      "question": "Which technology revolutionized how developers could access information and learn?",
+      "options": [
+        {
+          "id": "question-3-option-0",
+          "text": "Print books",
+          "isCorrect": false
+        },
+        {
+          "id": "question-3-option-1",
+          "text": "Stack Overflow and online communities",
+          "isCorrect": true
+        },
+        {
+          "id": "question-3-option-2",
+          "text": "CD-ROM tutorials",
+          "isCorrect": false
+        },
+        {
+          "id": "question-3-option-3",
+          "text": "Fax machines",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-4",
+      "question": "What is the key difference between traditional development and AI-assisted development?",
+      "options": [
+        {
+          "id": "question-4-option-0",
+          "text": "AI writes all the code automatically",
+          "isCorrect": false
+        },
+        {
+          "id": "question-4-option-1",
+          "text": "AI replaces human developers entirely",
+          "isCorrect": false
+        },
+        {
+          "id": "question-4-option-2",
+          "text": "AI augments human capabilities rather than replacing them",
+          "isCorrect": true
+        },
+        {
+          "id": "question-4-option-3",
+          "text": "AI makes development slower and more complex",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-5",
+      "question": "Which of the following is NOT a benefit of the evolution toward AI-assisted development?",
+      "options": [
+        {
+          "id": "question-5-option-0",
+          "text": "Faster prototyping and iteration",
+          "isCorrect": false
+        },
+        {
+          "id": "question-5-option-1",
+          "text": "Reduced need for human creativity and problem-solving",
+          "isCorrect": true
+        },
+        {
+          "id": "question-5-option-2",
+          "text": "More accessible development for non-experts",
+          "isCorrect": false
+        },
+        {
+          "id": "question-5-option-3",
+          "text": "Better code quality through AI suggestions",
+          "isCorrect": false
+        }
+      ]
+    }
+  ]
+} 

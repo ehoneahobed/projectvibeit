@@ -1,0 +1,215 @@
+{
+  "id": "fundamentals-of-vibe-coding-introduction-to-vibe-coding-vibe-coding-mindset",
+  "title": "The Vibe Coding Mindset",
+  "description": "Test your understanding of the mental approach and attitudes needed for successful Vibe Coding.",
+  "questions": [
+    {
+      "id": "question-0",
+      "question": "What is the fundamental shift in thinking required for Vibe Coding?",
+      "options": [
+        {
+          "id": "question-0-option-0",
+          "text": "Memorizing more programming syntax",
+          "isCorrect": false
+        },
+        {
+          "id": "question-0-option-1",
+          "text": "Thinking of AI as a replacement for human developers",
+          "isCorrect": false
+        },
+        {
+          "id": "question-0-option-2",
+          "text": "Moving from technical implementation to outcome-focused thinking",
+          "isCorrect": true
+        },
+        {
+          "id": "question-0-option-3",
+          "text": "Avoiding all traditional programming concepts",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-1",
+      "question": "Which mindset is most important for effective AI collaboration?",
+      "options": [
+        {
+          "id": "question-1-option-0",
+          "text": "Being skeptical of all AI suggestions",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-1",
+          "text": "Trusting AI completely without review",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-2",
+          "text": "Maintaining a balance of trust and critical evaluation",
+          "isCorrect": true
+        },
+        {
+          "id": "question-1-option-3",
+          "text": "Ignoring AI suggestions and doing everything manually",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-2",
+      "question": "What should you focus on when communicating with AI?",
+      "options": [
+        {
+          "id": "question-2-option-0",
+          "text": "Using technical jargon and complex terminology",
+          "isCorrect": false
+        },
+        {
+          "id": "question-2-option-1",
+          "text": "Being clear about your goals and desired outcomes",
+          "isCorrect": true
+        },
+        {
+          "id": "question-2-option-2",
+          "text": "Providing exact code specifications",
+          "isCorrect": false
+        },
+        {
+          "id": "question-2-option-3",
+          "text": "Using as few words as possible",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-3",
+      "question": "How should you approach AI-generated code?",
+      "options": [
+        {
+          "id": "question-3-option-0",
+          "text": "Accept it as perfect and use it without changes",
+          "isCorrect": false
+        },
+        {
+          "id": "question-3-option-1",
+          "text": "Reject it entirely and write everything from scratch",
+          "isCorrect": false
+        },
+        {
+          "id": "question-3-option-2",
+          "text": "Review, understand, and refine it to fit your needs",
+          "isCorrect": true
+        },
+        {
+          "id": "question-3-option-3",
+          "text": "Only use it for simple tasks",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-4",
+      "question": "What is the key to building confidence in Vibe Coding?",
+      "options": [
+        {
+          "id": "question-4-option-0",
+          "text": "Memorizing all possible AI commands",
+          "isCorrect": false
+        },
+        {
+          "id": "question-4-option-1",
+          "text": "Starting with small projects and gradually increasing complexity",
+          "isCorrect": true
+        },
+        {
+          "id": "question-4-option-2",
+          "text": "Avoiding any traditional programming concepts",
+          "isCorrect": false
+        },
+        {
+          "id": "question-4-option-3",
+          "text": "Relying entirely on AI for all decisions",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-5",
+      "question": "Which attitude is most helpful when learning Vibe Coding?",
+      "options": [
+        {
+          "id": "question-5-option-0",
+          "text": "Fear of making mistakes",
+          "isCorrect": false
+        },
+        {
+          "id": "question-5-option-1",
+          "text": "Perfectionism and avoiding experimentation",
+          "isCorrect": false
+        },
+        {
+          "id": "question-5-option-2",
+          "text": "Curiosity and willingness to experiment",
+          "isCorrect": true
+        },
+        {
+          "id": "question-5-option-3",
+          "text": "Sticking only to proven methods",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-6",
+      "question": "What should you do when AI gives you an unexpected result?",
+      "options": [
+        {
+          "id": "question-6-option-0",
+          "text": "Immediately discard the result and start over",
+          "isCorrect": false
+        },
+        {
+          "id": "question-6-option-1",
+          "text": "Accept it without question",
+          "isCorrect": false
+        },
+        {
+          "id": "question-6-option-2",
+          "text": "Analyze why it happened and learn from it",
+          "isCorrect": true
+        },
+        {
+          "id": "question-6-option-3",
+          "text": "Blame the AI for the mistake",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-7",
+      "question": "How should you think about your role in the AI-human partnership?",
+      "options": [
+        {
+          "id": "question-7-option-0",
+          "text": "As a passive observer letting AI do everything",
+          "isCorrect": false
+        },
+        {
+          "id": "question-7-option-1",
+          "text": "As the creative director and decision maker",
+          "isCorrect": true
+        },
+        {
+          "id": "question-7-option-2",
+          "text": "As a competitor trying to outsmart the AI",
+          "isCorrect": false
+        },
+        {
+          "id": "question-7-option-3",
+          "text": "As someone who just executes AI instructions",
+          "isCorrect": false
+        }
+      ]
+    }
+  ]
+} 
