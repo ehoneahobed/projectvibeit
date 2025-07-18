@@ -1,0 +1,695 @@
+---
+title: "Development Environment Setup"
+description: "Set up your frontend and backend projects, configure development tools, and initialize your database"
+type: "lesson"
+order: 3
+duration: "3 hours"
+---
+
+# Day 2: Development Environment Setup
+
+Today we'll set up your complete development environment. We'll initialize your frontend and backend projects, configure your database, set up authentication services, and create the foundation for your interactive web application. This setup will give you everything you need to start building your app.
+
+## Step 1: Project Structure Setup
+
+### Create Project Directory
+
+Start by creating your project structure:
+
+```bash
+# Create main project directory
+mkdir my-productivity-app
+cd my-productivity-app
+
+# Create frontend and backend directories
+mkdir frontend backend
+```
+
+### Project Structure Overview
+
+```
+my-productivity-app/
+├── frontend/                 # React/Vue frontend
+│   ├── public/
+│   ├── src/
+│   ├── package.json
+│   └── README.md
+├── backend/                  # Node.js/Python backend
+│   ├── src/
+│   ├── config/
+│   ├── package.json
+│   └── README.md
+├── docs/                     # Documentation
+├── .gitignore
+└── README.md
+```
+
+### AI Collaboration: Project Structure
+
+```
+"Help me set up the project structure for my [app type] application:
+App concept: [your chosen app]
+Tech stack: [frontend/backend/database]
+Architecture: [monolithic/microservices]
+
+Please provide:
+- Recommended folder structure
+- File organization best practices
+- Configuration file setup
+- Development workflow recommendations
+- Git repository structure"
+```
+
+## Step 2: Frontend Setup
+
+### React Setup (Recommended)
+
+Initialize your React frontend:
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Create React app with TypeScript
+npx create-react-app . --template typescript
+
+# Or use Vite for faster development
+npm create vite@latest . -- --template react-ts
+```
+
+### Essential Dependencies
+
+Install necessary frontend dependencies:
+
+```bash
+# Core dependencies
+npm install react-router-dom axios
+
+# UI and styling
+npm install @mui/material @emotion/react @emotion/styled
+# OR
+npm install tailwindcss @headlessui/react
+
+# State management
+npm install zustand
+# OR
+npm install @reduxjs/toolkit react-redux
+
+# Form handling
+npm install react-hook-form zod @hookform/resolvers
+
+# Date handling
+npm install date-fns
+
+# Charts (if needed)
+npm install recharts
+# OR
+npm install chart.js react-chartjs-2
+```
+
+### Frontend Configuration
+
+Set up your frontend configuration:
+
+```javascript
+// src/config/config.js
+const config = {
+  development: {
+    apiUrl: 'http://localhost:5000/api',
+    environment: 'development'
+  },
+  production: {
+    apiUrl: process.env.REACT_APP_API_URL || 'https://your-api.com/api',
+    environment: 'production'
+  }
+};
+
+export default config[process.env.NODE_ENV || 'development'];
+```
+
+### Environment Variables
+
+Create environment files:
+
+```bash
+# .env.development
+REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_ENVIRONMENT=development
+
+# .env.production
+REACT_APP_API_URL=https://your-api.com/api
+REACT_APP_ENVIRONMENT=production
+```
+
+### AI Collaboration: Frontend Setup
+
+```
+"Set up React frontend for my [app type] application:
+App concept: [your chosen app]
+UI framework: [Material-UI/Tailwind/etc.]
+State management: [Zustand/Redux/Context]
+
+Please provide:
+- Essential dependencies list
+- Project configuration setup
+- Environment variable configuration
+- Development server setup
+- Build optimization recommendations"
+```
+
+## Step 3: Backend Setup
+
+### Node.js/Express Setup
+
+Initialize your Node.js backend:
+
+```bash
+# Navigate to backend directory
+cd ../backend
+
+# Initialize package.json
+npm init -y
+
+# Install core dependencies
+npm install express cors helmet morgan dotenv
+
+# Install development dependencies
+npm install -D nodemon @types/node typescript ts-node
+
+# Install database dependencies
+npm install mongoose
+# OR for PostgreSQL
+npm install pg sequelize
+
+# Install authentication dependencies
+npm install bcryptjs jsonwebtoken
+
+# Install validation dependencies
+npm install joi express-validator
+
+# Install testing dependencies
+npm install -D jest supertest
+```
+
+### Backend Project Structure
+
+Create your backend folder structure:
+
+```bash
+backend/
+├── src/
+│   ├── controllers/          # Route controllers
+│   ├── models/              # Database models
+│   ├── routes/              # API routes
+│   ├── middleware/          # Custom middleware
+│   ├── services/            # Business logic
+│   ├── utils/               # Utility functions
+│   ├── config/              # Configuration files
+│   └── app.js               # Express app setup
+├── tests/                   # Test files
+├── package.json
+└── .env
+```
+
+### Express App Setup
+
+Create your main Express application:
+
+```javascript
+// src/app.js
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+require('dotenv').config();
+
+const app = express();
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(morgan('combined'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/tasks', require('./routes/tasks'));
+app.use('/api/users', require('./routes/users'));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    error: {
+      message: 'Internal server error',
+      code: 'INTERNAL_ERROR'
+    }
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = app;
+```
+
+### AI Collaboration: Backend Setup
+
+```
+"Set up Node.js/Express backend for my [app type] application:
+App concept: [your chosen app]
+Database: [MongoDB/PostgreSQL]
+Authentication: [JWT/Auth0]
+
+Please provide:
+- Essential dependencies list
+- Project structure setup
+- Express app configuration
+- Middleware setup recommendations
+- Development server configuration"
+```
+
+## Step 4: Database Setup
+
+### MongoDB Setup (NoSQL Option)
+
+Set up MongoDB for your application:
+
+```bash
+# Install MongoDB locally or use MongoDB Atlas
+# For local development
+brew install mongodb-community  # macOS
+# OR download from mongodb.com
+
+# Install Mongoose ODM
+npm install mongoose
+```
+
+### MongoDB Configuration
+
+```javascript
+// src/config/database.js
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error('Database connection error:', error);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+```
+
+### PostgreSQL Setup (SQL Option)
+
+Set up PostgreSQL for your application:
+
+```bash
+# Install PostgreSQL locally or use cloud service
+# For local development
+brew install postgresql  # macOS
+# OR download from postgresql.org
+
+# Install Sequelize ORM
+npm install sequelize pg pg-hstore
+npm install -D sequelize-cli
+```
+
+### PostgreSQL Configuration
+
+```javascript
+// src/config/database.js
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  }
+});
+
+const connectDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('PostgreSQL Connected');
+    
+    // Sync models (in development)
+    if (process.env.NODE_ENV === 'development') {
+      await sequelize.sync({ alter: true });
+      console.log('Database synced');
+    }
+  } catch (error) {
+    console.error('Database connection error:', error);
+    process.exit(1);
+  }
+};
+
+module.exports = { sequelize, connectDB };
+```
+
+### AI Collaboration: Database Setup
+
+```
+"Set up database for my [app type] application:
+App concept: [your chosen app]
+Database choice: [MongoDB/PostgreSQL]
+ORM/ODM: [Mongoose/Sequelize]
+
+Please provide:
+- Database installation instructions
+- Connection configuration
+- Model setup recommendations
+- Migration strategy
+- Development data seeding"
+```
+
+## Step 5: Authentication Setup
+
+### JWT Authentication Setup
+
+Set up JWT-based authentication:
+
+```bash
+# Install JWT dependencies
+npm install jsonwebtoken bcryptjs
+```
+
+### JWT Configuration
+
+```javascript
+// src/config/auth.js
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN
+  });
+};
+
+const verifyToken = (token) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
+
+const hashPassword = async (password) => {
+  const saltRounds = 12;
+  return await bcrypt.hash(password, saltRounds);
+};
+
+const comparePassword = async (password, hash) => {
+  return await bcrypt.compare(password, hash);
+};
+
+module.exports = {
+  generateToken,
+  verifyToken,
+  hashPassword,
+  comparePassword
+};
+```
+
+### Authentication Middleware
+
+```javascript
+// src/middleware/auth.js
+const { verifyToken } = require('../config/auth');
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        message: 'Access token required',
+        code: 'TOKEN_REQUIRED'
+      }
+    });
+  }
+
+  try {
+    const decoded = verifyToken(token);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      success: false,
+      error: {
+        message: 'Invalid token',
+        code: 'INVALID_TOKEN'
+      }
+    });
+  }
+};
+
+module.exports = authenticateToken;
+```
+
+### AI Collaboration: Authentication Setup
+
+```
+"Set up JWT authentication for my [app type] application:
+App concept: [your chosen app]
+Security requirements: [password hashing, token management]
+User model: [MongoDB/PostgreSQL]
+
+Please provide:
+- JWT configuration setup
+- Password hashing implementation
+- Authentication middleware
+- Token refresh strategy
+- Security best practices"
+```
+
+## Step 6: Development Tools Configuration
+
+### Git Setup
+
+Initialize Git repository:
+
+```bash
+# Initialize Git
+git init
+
+# Create .gitignore
+cat > .gitignore << EOF
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Database
+*.sqlite
+*.db
+EOF
+
+# Initial commit
+git add .
+git commit -m "Initial project setup"
+```
+
+### VS Code Configuration
+
+Create VS Code workspace settings:
+
+```json
+// .vscode/settings.json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/build": true,
+    "**/dist": true
+  }
+}
+```
+
+### ESLint and Prettier Setup
+
+```bash
+# Frontend linting
+cd frontend
+npm install -D eslint prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser
+
+# Backend linting
+cd ../backend
+npm install -D eslint prettier
+```
+
+### AI Collaboration: Development Tools
+
+```
+"Configure development tools for my [app type] application:
+App concept: [your chosen app]
+IDE: [VS Code/WebStorm]
+Code quality: [ESLint/Prettier]
+
+Please provide:
+- Git repository setup
+- VS Code configuration
+- ESLint and Prettier setup
+- Development workflow recommendations
+- Code quality tools configuration"
+```
+
+## Step 7: Environment Configuration
+
+### Environment Variables Setup
+
+Create environment configuration files:
+
+```bash
+# Backend .env
+cat > backend/.env << EOF
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/my-productivity-app
+# OR for PostgreSQL
+DATABASE_URL=postgresql://username:password@localhost:5432/my-productivity-app
+
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=7d
+
+CORS_ORIGIN=http://localhost:3000
+EOF
+
+# Frontend .env.development
+cat > frontend/.env.development << EOF
+REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_ENVIRONMENT=development
+EOF
+```
+
+### Package.json Scripts
+
+Set up development scripts:
+
+```json
+// backend/package.json
+{
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  }
+}
+
+// frontend/package.json
+{
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  }
+}
+```
+
+### AI Collaboration: Environment Setup
+
+```
+"Configure environment for my [app type] application:
+App concept: [your chosen app]
+Deployment: [local/cloud]
+Security: [environment variables, secrets]
+
+Please provide:
+- Environment variable configuration
+- Development vs production setup
+- Security best practices
+- Deployment configuration
+- Monitoring setup recommendations"
+```
+
+## Success Criteria for Day 2
+
+✅ **Frontend project initialized** with React and essential dependencies  
+✅ **Backend project set up** with Express and core middleware  
+✅ **Database configured** and connection established  
+✅ **Authentication system** initialized with JWT  
+✅ **Development tools** configured (Git, ESLint, Prettier)  
+✅ **Environment variables** properly configured  
+✅ **Development scripts** set up for easy workflow  
+✅ **Project structure** organized and documented  
+
+## Next Steps
+
+Tomorrow we'll focus on **Authentication System Implementation** where you'll:
+- Implement user registration and login
+- Create authentication middleware
+- Set up protected routes
+- Add password reset functionality
+- Test authentication flows
+
+Your development environment is now ready! You have a solid foundation to start building your interactive web application. 

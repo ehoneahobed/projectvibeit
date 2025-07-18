@@ -187,3 +187,27 @@ export async function uncompleteLesson(
     return { success: false, error: 'Failed to uncomplete lesson', data: null }
   }
 } 
+
+/**
+ * Get user's username for profile URL generation
+ */
+export async function getUserUsername() {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized", data: null }
+    }
+
+    await connectDB()
+    
+    const user = await User.findById(session.user.id, { username: 1 }).lean() as { username: string } | null
+    if (!user) {
+      return { success: false, error: "User not found", data: null }
+    }
+
+    return { success: true, data: user.username, error: null }
+  } catch (error) {
+    console.error('Error fetching user username:', error)
+    return { success: false, error: 'Failed to fetch username', data: null }
+  }
+} 

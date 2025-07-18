@@ -6,6 +6,7 @@ import { DiscussionSection } from "@/components/discussions/discussion-section"
 import { LessonCompletion } from "@/components/lesson-completion"
 import { FloatingCompletionButton } from "@/components/floating-completion-button"
 
+
 interface LessonPageClientProps {
   courseSlug: string
   moduleSlug: string
@@ -18,6 +19,7 @@ interface LessonPageClientProps {
   moduleTitle: string
   courseTitle: string
   showAskQuestionButton?: boolean
+
 }
 
 export function LessonPageClient({
@@ -77,6 +79,7 @@ export function LessonPageClient({
           nextLesson={nextLesson}
           moduleTitle={moduleTitle}
           courseTitle={courseTitle}
+
         />
       </div>
 

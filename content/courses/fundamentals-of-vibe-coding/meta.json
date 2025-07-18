@@ -156,49 +156,98 @@
     {
       "title": "Project 1: Static Website",
       "slug": "project-1-static-website",
-      "description": "Build a professional business website with responsive design and SEO optimization",
+      "description": "Build a professional business website using Vibe Coding principles and AI-assisted development",
       "lessons": [
         {
           "title": "Project Overview",
           "slug": "01-project-overview",
-          "description": "Introduction to building a professional business website with responsive design and SEO optimization",
+          "description": "Introduction to building a professional business website using Vibe Coding principles",
           "duration": "30 minutes"
         },
         {
           "title": "Project Planning",
           "slug": "02-project-planning",
-          "description": "Choose your business concept, plan content structure, and set up your development environment",
+          "description": "Choose your business concept, create a comprehensive PRD, and select your Vibe Coding platform",
           "duration": "2 hours"
         },
         {
-          "title": "Design and Wireframing",
+          "title": "AI-Powered Design and Visual Planning",
           "slug": "03-design-and-wireframing",
-          "description": "Create wireframes, design system, and plan your website's visual structure",
+          "description": "Use AI to generate wireframes, design systems, and visual concepts for your website",
+          "duration": "2 hours"
+        },
+        {
+          "title": "AI-Powered Content Creation and SEO",
+          "slug": "04-html-structure",
+          "description": "Generate compelling website copy, optimize for search engines, and create user-focused content with AI",
+          "duration": "2 hours"
+        },
+        {
+          "title": "AI-Powered Development and Iteration",
+          "slug": "05-css-styling",
+          "description": "Use your chosen Vibe Coding platform to generate and iterate on your website",
           "duration": "3 hours"
         },
         {
-          "title": "HTML Structure and Content",
-          "slug": "04-html-structure",
-          "description": "Build semantic HTML structure, implement navigation, and add SEO-optimized content",
+          "title": "Deployment, Monitoring, and Ongoing Optimization",
+          "slug": "06-performance-and-deployment",
+          "description": "Deploy your website, set up monitoring, and plan for continuous improvement",
+          "duration": "2 hours"
+        },
+        {
+          "title": "Final Testing, Launch, and Project Completion",
+          "slug": "07-final-polish",
+          "description": "Complete final testing, launch your website, and celebrate your Vibe Coding success",
+          "duration": "1 hour"
+        }
+      ]
+    },
+    {
+      "title": "Project 2: Interactive Web App",
+      "slug": "project-2-interactive-web-app",
+      "description": "Create a productivity tool with user authentication and data persistence",
+      "lessons": [
+        {
+          "title": "Project Overview",
+          "slug": "01-project-overview",
+          "description": "Introduction to building an interactive web application with user authentication and data persistence",
+          "duration": "30 minutes"
+        },
+        {
+          "title": "Project Planning and Architecture",
+          "slug": "02-project-planning",
+          "description": "Choose your app concept, design technical architecture, and plan your database schema",
+          "duration": "3 hours"
+        },
+        {
+          "title": "Development Environment Setup",
+          "slug": "03-development-setup",
+          "description": "Set up your frontend and backend projects, configure development tools, and initialize your database",
+          "duration": "3 hours"
+        },
+        {
+          "title": "Authentication System Implementation",
+          "slug": "04-authentication-system",
+          "description": "Implement user registration, login, authentication middleware, and protected routes",
           "duration": "4 hours"
         },
         {
-          "title": "CSS Styling and Responsive Design",
-          "slug": "05-css-styling",
-          "description": "Implement your design system with CSS, create responsive layouts, and add modern styling",
+          "title": "Core Features Development",
+          "slug": "05-core-features",
+          "description": "Implement CRUD operations, create user interface components, and add real-time updates",
+          "duration": "6 hours"
+        },
+        {
+          "title": "Advanced Features and Polish",
+          "slug": "06-advanced-features",
+          "description": "Add search and filtering, data visualization, export/import features, and performance optimizations",
           "duration": "5 hours"
         },
         {
-          "title": "JavaScript Functionality and Forms",
-          "slug": "06-javascript-functionality",
-          "description": "Add form validation, mobile navigation, smooth scrolling, and interactive elements",
+          "title": "Testing and Deployment",
+          "slug": "07-testing-deployment",
+          "description": "Comprehensive testing, quality assurance, and deployment to production",
           "duration": "4 hours"
-        },
-        {
-          "title": "Performance and Deployment",
-          "slug": "07-performance-and-deployment",
-          "description": "Optimize performance, implement SEO best practices, test thoroughly, and deploy your website",
-          "duration": "6 hours"
         }
       ]
     },
@@ -207,12 +256,6 @@
       "slug": "project-portfolio-development",
       "description": "Apply all your learning by building real-world projects with AI assistance",
       "lessons": [
-        {
-          "title": "Project 2: Interactive Web App",
-          "slug": "project-2-interactive-web-app",
-          "description": "Create a productivity tool with user authentication and data persistence",
-          "duration": "1 week"
-        },
         {
           "title": "Project 3: Micro-SaaS",
           "slug": "project-3-micro-saas",

@@ -240,6 +240,55 @@
   .prose pre code {
     @apply bg-transparent p-0 text-muted-foreground;
   }
+
+  /* Enhanced code block styles for better formatting */
+  .prose pre,
+  .prose code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Ensure code blocks preserve formatting */
+  .prose pre > code {
+    display: block;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    font-family: var(--font-mono);
+    line-height: 1.6;
+  }
+
+  /* Enhanced styling for formatted text blocks */
+  .prose pre[class*="language-text"],
+  .prose pre[class*="language-markdown"] {
+    font-family: var(--font-mono);
+    line-height: 1.6;
+  }
+
+  .prose pre[class*="language-text"] div,
+  .prose pre[class*="language-markdown"] div {
+    margin-bottom: 0.5rem;
+  }
+
+  .prose pre[class*="language-text"] div:last-child,
+  .prose pre[class*="language-markdown"] div:last-child {
+    margin-bottom: 0;
+  }
+
+  .prose pre[class*="language-text"] div.ml-4,
+  .prose pre[class*="language-markdown"] div.ml-4 {
+    margin-left: 1rem;
+    position: relative;
+  }
+
+  .prose pre[class*="language-text"] div.ml-4::before,
+  .prose pre[class*="language-markdown"] div.ml-4::before {
+    content: "•";
+    position: absolute;
+    left: -0.5rem;
+    color: hsl(var(--muted-foreground));
+  }
   
   /* Dark mode adjustments */
   .dark .prose {

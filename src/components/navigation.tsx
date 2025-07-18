@@ -240,9 +240,9 @@ export function Navigation() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
                 <DropdownMenuItem asChild className="text-slate-700 dark:text-slate-300 hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
-                  <Link href="/settings" className="flex items-center">
+                  <Link href="/settings/profile" className="flex items-center">
                     <Settings className="w-4 h-4 mr-2 text-[#0C6075]" />
-                    Settings
+                    Profile Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem 

@@ -378,6 +378,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
               moduleTitle={module.title}
               courseTitle={course.title}
               showAskQuestionButton={true}
+
             />
 
             {/* Navigation */}

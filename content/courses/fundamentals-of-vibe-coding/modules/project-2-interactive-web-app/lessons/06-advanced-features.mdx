@@ -1,0 +1,1354 @@
+---
+title: "Advanced Features and Polish"
+description: "Add search and filtering, data visualization, export/import features, and performance optimizations"
+type: "lesson"
+order: 6
+duration: "5 hours"
+---
+
+# Day 5: Advanced Features and Polish
+
+Today we'll enhance your application with advanced features that will make it more powerful and user-friendly. We'll implement search and filtering functionality, add data visualization and charts, create export/import features, and apply performance optimizations. These features will transform your app from functional to exceptional.
+
+## Step 1: Advanced Search and Filtering
+
+### Backend Search Implementation
+
+Implement comprehensive search functionality:
+
+```javascript
+// src/services/searchService.js
+const Task = require('../models/Task');
+
+class SearchService {
+  static async searchTasks(userId, searchParams) {
+    const {
+      query,
+      status,
+      priority,
+      category,
+      dateRange,
+      tags,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 10
+    } = searchParams;
+
+    // Build search criteria
+    const searchCriteria = { user: userId };
+
+    // Text search across multiple fields
+    if (query) {
+      searchCriteria.$or = [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { category: { $regex: query, $options: 'i' } },
+        { tags: { $in: [new RegExp(query, 'i')] } }
+      ];
+    }
+
+    // Filter by status
+    if (status && status !== 'all') {
+      searchCriteria.status = status;
+    }
+
+    // Filter by priority
+    if (priority && priority !== 'all') {
+      searchCriteria.priority = priority;
+    }
+
+    // Filter by category
+    if (category && category !== 'all') {
+      searchCriteria.category = category;
+    }
+
+    // Filter by date range
+    if (dateRange) {
+      const { startDate, endDate } = dateRange;
+      if (startDate || endDate) {
+        searchCriteria.createdAt = {};
+        if (startDate) {
+          searchCriteria.createdAt.$gte = new Date(startDate);
+        }
+        if (endDate) {
+          searchCriteria.createdAt.$lte = new Date(endDate);
+        }
+      }
+    }
+
+    // Filter by tags
+    if (tags && tags.length > 0) {
+      searchCriteria.tags = { $in: tags };
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Execute search with aggregation for better performance
+    const pipeline = [
+      { $match: searchCriteria },
+      {
+        $addFields: {
+          isOverdue: {
+            $and: [
+              { $ne: ['$status', 'completed'] },
+              { $ne: ['$dueDate', null] },
+              { $lt: ['$dueDate', new Date()] }
+            ]
+          }
+        }
+      },
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: parseInt(limit) },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          'user.password': 0,
+          'user.emailVerificationToken': 0,
+          'user.passwordResetToken': 0
+        }
+      }
+    ];
+
+    const [tasks, totalCount] = await Promise.all([
+      Task.aggregate(pipeline),
+      Task.countDocuments(searchCriteria)
+    ]);
+
+    return {
+      tasks,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalCount,
+        pages: Math.ceil(totalCount / limit)
+      }
+    };
+  }
+
+  static async getSearchSuggestions(userId, query) {
+    if (!query || query.length < 2) return [];
+
+    const suggestions = await Task.aggregate([
+      { $match: { user: userId } },
+      {
+        $facet: {
+          titles: [
+            { $match: { title: { $regex: query, $options: 'i' } } },
+            { $group: { _id: '$title' } },
+            { $limit: 5 }
+          ],
+          categories: [
+            { $match: { category: { $regex: query, $options: 'i' } } },
+            { $group: { _id: '$category' } },
+            { $limit: 5 }
+          ],
+          tags: [
+            { $unwind: '$tags' },
+            { $match: { tags: { $regex: query, $options: 'i' } } },
+            { $group: { _id: '$tags' } },
+            { $limit: 5 }
+          ]
+        }
+      }
+    ]);
+
+    return {
+      titles: suggestions[0].titles.map(s => s._id),
+      categories: suggestions[0].categories.map(s => s._id),
+      tags: suggestions[0].tags.map(s => s._id)
+    };
+  }
+}
+
+module.exports = SearchService;
+```
+
+### Advanced Search Controller
+
+```javascript
+// src/controllers/searchController.js
+const SearchService = require('../services/searchService');
+
+const searchTasks = async (req, res) => {
+  try {
+    const searchParams = {
+      query: req.query.q,
+      status: req.query.status,
+      priority: req.query.priority,
+      category: req.query.category,
+      dateRange: req.query.dateRange ? JSON.parse(req.query.dateRange) : null,
+      tags: req.query.tags ? req.query.tags.split(',') : null,
+      sortBy: req.query.sortBy,
+      sortOrder: req.query.sortOrder,
+      page: req.query.page,
+      limit: req.query.limit
+    };
+
+    const result = await SearchService.searchTasks(req.user._id, searchParams);
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Search failed',
+        code: 'SEARCH_ERROR'
+      }
+    });
+  }
+};
+
+const getSearchSuggestions = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const suggestions = await SearchService.getSearchSuggestions(req.user._id, query);
+
+    res.json({
+      success: true,
+      data: suggestions
+    });
+
+  } catch (error) {
+    console.error('Search suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to get search suggestions',
+        code: 'SUGGESTIONS_ERROR'
+      }
+    });
+  }
+};
+
+module.exports = {
+  searchTasks,
+  getSearchSuggestions
+};
+```
+
+### AI Collaboration: Advanced Search
+
+```
+"Implement advanced search for my [app type] application:
+App concept: [your chosen app]
+Search features: [text search, filters, suggestions]
+Database: [MongoDB/PostgreSQL]
+
+Please provide:
+- Full-text search implementation
+- Filter and sort functionality
+- Search suggestions
+- Performance optimization
+- Search result ranking"
+```
+
+## Step 2: Data Visualization and Charts
+
+### Analytics Service
+
+Create analytics and data visualization services:
+
+```javascript
+// src/services/analyticsService.js
+const Task = require('../models/Task');
+
+class AnalyticsService {
+  static async getTaskAnalytics(userId, timeRange = '30d') {
+    const startDate = this.getStartDate(timeRange);
+    
+    const analytics = await Task.aggregate([
+      { $match: { user: userId, createdAt: { $gte: startDate } } },
+      {
+        $facet: {
+          statusDistribution: [
+            { $group: { _id: '$status', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+          ],
+          priorityDistribution: [
+            { $group: { _id: '$priority', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+          ],
+          categoryDistribution: [
+            { $group: { _id: '$category', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+          ],
+          dailyProgress: [
+            {
+              $group: {
+                _id: {
+                  $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+                },
+                created: { $sum: 1 },
+                completed: {
+                  $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
+                }
+              }
+            },
+            { $sort: { _id: 1 } }
+          ],
+          completionRate: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: 1 },
+                completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } }
+              }
+            }
+          ],
+          overdueTasks: [
+            { $match: { status: { $ne: 'completed' }, dueDate: { $lt: new Date() } } },
+            { $count: 'count' }
+          ]
+        }
+      }
+    ]);
+
+    const result = analytics[0];
+    
+    // Calculate completion rate
+    const completionRate = result.completionRate[0] 
+      ? (result.completionRate[0].completed / result.completionRate[0].total * 100).toFixed(1)
+      : 0;
+
+    // Calculate overdue count
+    const overdueCount = result.overdueTasks[0] ? result.overdueTasks[0].count : 0;
+
+    return {
+      statusDistribution: result.statusDistribution,
+      priorityDistribution: result.priorityDistribution,
+      categoryDistribution: result.categoryDistribution,
+      dailyProgress: result.dailyProgress,
+      completionRate: parseFloat(completionRate),
+      overdueCount,
+      totalTasks: result.completionRate[0] ? result.completionRate[0].total : 0
+    };
+  }
+
+  static async getProductivityTrends(userId, days = 30) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const trends = await Task.aggregate([
+      { $match: { user: userId, createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          tasksCreated: { $sum: 1 },
+          tasksCompleted: {
+            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
+          }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    return trends;
+  }
+
+  static getStartDate(timeRange) {
+    const now = new Date();
+    switch (timeRange) {
+      case '7d':
+        return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      case '30d':
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      case '90d':
+        return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      case '1y':
+        return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+      default:
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+  }
+}
+
+module.exports = AnalyticsService;
+```
+
+### Analytics Controller
+
+```javascript
+// src/controllers/analyticsController.js
+const AnalyticsService = require('../services/analyticsService');
+
+const getTaskAnalytics = async (req, res) => {
+  try {
+    const { timeRange } = req.query;
+    const analytics = await AnalyticsService.getTaskAnalytics(req.user._id, timeRange);
+
+    res.json({
+      success: true,
+      data: analytics
+    });
+
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to fetch analytics',
+        code: 'ANALYTICS_ERROR'
+      }
+    });
+  }
+};
+
+const getProductivityTrends = async (req, res) => {
+  try {
+    const { days } = req.query;
+    const trends = await AnalyticsService.getProductivityTrends(req.user._id, days);
+
+    res.json({
+      success: true,
+      data: trends
+    });
+
+  } catch (error) {
+    console.error('Trends error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to fetch productivity trends',
+        code: 'TRENDS_ERROR'
+      }
+    });
+  }
+};
+
+module.exports = {
+  getTaskAnalytics,
+  getProductivityTrends
+};
+```
+
+### Frontend Charts Component
+
+```jsx
+// src/components/analytics/AnalyticsDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import api from '../../services/api';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const AnalyticsDashboard = () => {
+  const [analytics, setAnalytics] = useState(null);
+  const [trends, setTrends] = useState(null);
+  const [timeRange, setTimeRange] = useState('30d');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [timeRange]);
+
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      const [analyticsRes, trendsRes] = await Promise.all([
+        api.get(`/analytics/tasks?timeRange=${timeRange}`),
+        api.get('/analytics/trends?days=30')
+      ]);
+
+      setAnalytics(analyticsRes.data.data);
+      setTrends(trendsRes.data.data);
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div>Loading analytics...</div>;
+  }
+
+  if (!analytics) {
+    return <div>No analytics data available</div>;
+  }
+
+  const statusChartData = {
+    labels: analytics.statusDistribution.map(item => item._id),
+    datasets: [
+      {
+        data: analytics.statusDistribution.map(item => item.count),
+        backgroundColor: [
+          '#10b981', // completed
+          '#3b82f6', // in-progress
+          '#6b7280', // pending
+          '#ef4444'  // cancelled
+        ],
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }
+    ]
+  };
+
+  const priorityChartData = {
+    labels: analytics.priorityDistribution.map(item => item._id),
+    datasets: [
+      {
+        label: 'Tasks by Priority',
+        data: analytics.priorityDistribution.map(item => item.count),
+        backgroundColor: [
+          '#10b981', // low
+          '#f59e0b', // medium
+          '#f97316', // high
+          '#ef4444'  // urgent
+        ],
+        borderWidth: 1,
+        borderColor: '#ffffff'
+      }
+    ]
+  };
+
+  const productivityChartData = {
+    labels: trends.map(item => item._id),
+    datasets: [
+      {
+        label: 'Tasks Created',
+        data: trends.map(item => item.tasksCreated),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.4
+      },
+      {
+        label: 'Tasks Completed',
+        data: trends.map(item => item.tasksCompleted),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        fill: true,
+        tension: 0.4
+      }
+    ]
+  };
+
+  return (
+    <div className="analytics-dashboard">
+      <div className="dashboard-header">
+        <h2>Analytics Dashboard</h2>
+        <select 
+          value={timeRange} 
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="time-range-selector"
+        >
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="1y">Last year</option>
+        </select>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h3>Completion Rate</h3>
+          <div className="stat-value">{analytics.completionRate}%</div>
+        </div>
+        <div className="stat-card">
+          <h3>Total Tasks</h3>
+          <div className="stat-value">{analytics.totalTasks}</div>
+        </div>
+        <div className="stat-card">
+          <h3>Overdue Tasks</h3>
+          <div className="stat-value overdue">{analytics.overdueCount}</div>
+        </div>
+      </div>
+
+      <div className="charts-grid">
+        <div className="chart-container">
+          <h3>Task Status Distribution</h3>
+          <Doughnut 
+            data={statusChartData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'bottom'
+                }
+              }
+            }}
+          />
+        </div>
+
+        <div className="chart-container">
+          <h3>Tasks by Priority</h3>
+          <Bar 
+            data={priorityChartData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }}
+          />
+        </div>
+
+        <div className="chart-container full-width">
+          <h3>Productivity Trends</h3>
+          <Line 
+            data={productivityChartData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top'
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AnalyticsDashboard;
+```
+
+### AI Collaboration: Data Visualization
+
+```
+"Create data visualization for my [app type] application:
+App concept: [your chosen app]
+Charts needed: [analytics, trends, distributions]
+Library: [Chart.js/Recharts/D3.js]
+
+Please provide:
+- Analytics service implementation
+- Chart components setup
+- Data processing logic
+- Interactive features
+- Performance optimization"
+```
+
+## Step 3: Export/Import Features
+
+### Export Service
+
+Implement data export functionality:
+
+```javascript
+// src/services/exportService.js
+const Task = require('../models/Task');
+const ExcelJS = require('exceljs');
+const PDFDocument = require('pdfkit');
+
+class ExportService {
+  static async exportTasksToExcel(userId, filters = {}) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Tasks');
+
+    // Define columns
+    worksheet.columns = [
+      { header: 'Title', key: 'title', width: 30 },
+      { header: 'Description', key: 'description', width: 40 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Priority', key: 'priority', width: 15 },
+      { header: 'Category', key: 'category', width: 20 },
+      { header: 'Due Date', key: 'dueDate', width: 15 },
+      { header: 'Created At', key: 'createdAt', width: 15 },
+      { header: 'Completed At', key: 'completedAt', width: 15 },
+      { header: 'Tags', key: 'tags', width: 20 }
+    ];
+
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Build query
+    const query = { user: userId };
+    if (filters.status) query.status = filters.status;
+    if (filters.priority) query.priority = filters.priority;
+    if (filters.category) query.category = filters.category;
+
+    // Fetch tasks
+    const tasks = await Task.find(query)
+      .sort({ createdAt: -1 })
+      .populate('user', 'name email');
+
+    // Add data rows
+    tasks.forEach(task => {
+      worksheet.addRow({
+        title: task.title,
+        description: task.description || '',
+        status: task.status,
+        priority: task.priority,
+        category: task.category || '',
+        dueDate: task.dueDate ? task.dueDate.toLocaleDateString() : '',
+        createdAt: task.createdAt.toLocaleDateString(),
+        completedAt: task.completedAt ? task.completedAt.toLocaleDateString() : '',
+        tags: task.tags ? task.tags.join(', ') : ''
+      });
+    });
+
+    // Add conditional formatting
+    worksheet.addConditionalFormatting({
+      ref: `C2:C${tasks.length + 1}`,
+      rules: [
+        {
+          type: 'containsText',
+          operator: 'containsText',
+          text: 'completed',
+          style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF90EE90' } } }
+        },
+        {
+          type: 'containsText',
+          operator: 'containsText',
+          text: 'overdue',
+          style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FFFFB6C1' } } }
+        }
+      ]
+    });
+
+    return workbook;
+  }
+
+  static async exportTasksToPDF(userId, filters = {}) {
+    const doc = new PDFDocument();
+    const chunks = [];
+
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => Buffer.concat(chunks));
+
+    // Add title
+    doc.fontSize(20).text('Task Report', { align: 'center' });
+    doc.moveDown();
+
+    // Add export date
+    doc.fontSize(12).text(`Exported on: ${new Date().toLocaleDateString()}`, { align: 'right' });
+    doc.moveDown();
+
+    // Build query
+    const query = { user: userId };
+    if (filters.status) query.status = filters.status;
+    if (filters.priority) query.priority = filters.priority;
+    if (filters.category) query.category = filters.category;
+
+    // Fetch tasks
+    const tasks = await Task.find(query)
+      .sort({ createdAt: -1 })
+      .populate('user', 'name email');
+
+    // Add tasks
+    tasks.forEach((task, index) => {
+      doc.fontSize(14).text(`${index + 1}. ${task.title}`, { underline: true });
+      doc.fontSize(10).text(`Status: ${task.status} | Priority: ${task.priority}`);
+      
+      if (task.description) {
+        doc.fontSize(10).text(`Description: ${task.description}`);
+      }
+      
+      if (task.category) {
+        doc.fontSize(10).text(`Category: ${task.category}`);
+      }
+      
+      if (task.dueDate) {
+        doc.fontSize(10).text(`Due Date: ${task.dueDate.toLocaleDateString()}`);
+      }
+      
+      if (task.tags && task.tags.length > 0) {
+        doc.fontSize(10).text(`Tags: ${task.tags.join(', ')}`);
+      }
+      
+      doc.moveDown();
+    });
+
+    doc.end();
+    return Buffer.concat(chunks);
+  }
+
+  static async exportTasksToJSON(userId, filters = {}) {
+    const query = { user: userId };
+    if (filters.status) query.status = filters.status;
+    if (filters.priority) query.priority = filters.priority;
+    if (filters.category) query.category = filters.category;
+
+    const tasks = await Task.find(query)
+      .sort({ createdAt: -1 })
+      .populate('user', 'name email')
+      .lean();
+
+    return {
+      exportDate: new Date().toISOString(),
+      totalTasks: tasks.length,
+      filters,
+      tasks: tasks.map(task => ({
+        ...task,
+        _id: task._id.toString(),
+        user: task.user._id.toString(),
+        createdAt: task.createdAt.toISOString(),
+        updatedAt: task.updatedAt.toISOString(),
+        dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+        completedAt: task.completedAt ? task.completedAt.toISOString() : null
+      }))
+    };
+  }
+}
+
+module.exports = ExportService;
+```
+
+### Import Service
+
+Implement data import functionality:
+
+```javascript
+// src/services/importService.js
+const Task = require('../models/Task');
+const csv = require('csv-parser');
+const fs = require('fs');
+
+class ImportService {
+  static async importTasksFromCSV(userId, filePath) {
+    return new Promise((resolve, reject) => {
+      const tasks = [];
+      const errors = [];
+
+      fs.createReadStream(filePath)
+        .pipe(csv())
+        .on('data', (row) => {
+          try {
+            const task = this.parseCSVRow(row);
+            if (task) {
+              task.user = userId;
+              tasks.push(task);
+            }
+          } catch (error) {
+            errors.push({
+              row: row,
+              error: error.message
+            });
+          }
+        })
+        .on('end', async () => {
+          try {
+            if (tasks.length > 0) {
+              const result = await Task.insertMany(tasks);
+              resolve({
+                success: true,
+                imported: result.length,
+                errors: errors
+              });
+            } else {
+              resolve({
+                success: false,
+                imported: 0,
+                errors: errors
+              });
+            }
+          } catch (error) {
+            reject(error);
+          }
+        })
+        .on('error', reject);
+    });
+  }
+
+  static async importTasksFromJSON(userId, jsonData) {
+    try {
+      const tasks = jsonData.tasks || [];
+      const errors = [];
+      const validTasks = [];
+
+      for (const taskData of tasks) {
+        try {
+          const task = this.parseJSONTask(taskData);
+          if (task) {
+            task.user = userId;
+            validTasks.push(task);
+          }
+        } catch (error) {
+          errors.push({
+            task: taskData,
+            error: error.message
+          });
+        }
+      }
+
+      if (validTasks.length > 0) {
+        const result = await Task.insertMany(validTasks);
+        return {
+          success: true,
+          imported: result.length,
+          errors: errors
+        };
+      } else {
+        return {
+          success: false,
+          imported: 0,
+          errors: errors
+        };
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static parseCSVRow(row) {
+    const task = {
+      title: row.title || row.Title,
+      description: row.description || row.Description || '',
+      status: row.status || row.Status || 'pending',
+      priority: row.priority || row.Priority || 'medium',
+      category: row.category || row.Category || '',
+      tags: row.tags || row.Tags ? row.tags.split(',').map(tag => tag.trim()) : []
+    };
+
+    if (row.dueDate || row['Due Date']) {
+      task.dueDate = new Date(row.dueDate || row['Due Date']);
+    }
+
+    // Validate required fields
+    if (!task.title) {
+      throw new Error('Title is required');
+    }
+
+    // Validate status
+    const validStatuses = ['pending', 'in-progress', 'completed', 'cancelled'];
+    if (!validStatuses.includes(task.status)) {
+      task.status = 'pending';
+    }
+
+    // Validate priority
+    const validPriorities = ['low', 'medium', 'high', 'urgent'];
+    if (!validPriorities.includes(task.priority)) {
+      task.priority = 'medium';
+    }
+
+    return task;
+  }
+
+  static parseJSONTask(taskData) {
+    const task = {
+      title: taskData.title,
+      description: taskData.description || '',
+      status: taskData.status || 'pending',
+      priority: taskData.priority || 'medium',
+      category: taskData.category || '',
+      tags: taskData.tags || []
+    };
+
+    if (taskData.dueDate) {
+      task.dueDate = new Date(taskData.dueDate);
+    }
+
+    // Validate required fields
+    if (!task.title) {
+      throw new Error('Title is required');
+    }
+
+    return task;
+  }
+}
+
+module.exports = ImportService;
+```
+
+### AI Collaboration: Export/Import Features
+
+```
+"Create export/import features for my [app type] application:
+App concept: [your chosen app]
+Formats: [Excel, PDF, JSON, CSV]
+Features: [data export, bulk import, validation]
+
+Please provide:
+- Export service implementation
+- Import service with validation
+- File format support
+- Error handling strategies
+- Performance optimization"
+```
+
+## Step 4: Performance Optimization
+
+### Database Optimization
+
+Implement database performance improvements:
+
+```javascript
+// src/config/database.js
+const mongoose = require('mongoose');
+
+// Optimize MongoDB connection
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferMaxEntries: 0,
+      bufferCommands: false
+    });
+    
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Enable query debugging in development
+    if (process.env.NODE_ENV === 'development') {
+      mongoose.set('debug', true);
+    }
+  } catch (error) {
+    console.error('Database connection error:', error);
+    process.exit(1);
+  }
+};
+
+// Add database indexes for better performance
+const createIndexes = async () => {
+  try {
+    const Task = require('../models/Task');
+    
+    // Create compound indexes for common queries
+    await Task.collection.createIndex({ user: 1, status: 1 });
+    await Task.collection.createIndex({ user: 1, dueDate: 1 });
+    await Task.collection.createIndex({ user: 1, category: 1 });
+    await Task.collection.createIndex({ user: 1, createdAt: -1 });
+    await Task.collection.createIndex({ user: 1, priority: 1 });
+    
+    // Text index for search functionality
+    await Task.collection.createIndex({
+      title: 'text',
+      description: 'text',
+      category: 'text',
+      tags: 'text'
+    });
+    
+    console.log('Database indexes created successfully');
+  } catch (error) {
+    console.error('Error creating indexes:', error);
+  }
+};
+
+module.exports = { connectDB, createIndexes };
+```
+
+### Caching Implementation
+
+Add Redis caching for better performance:
+
+```javascript
+// src/services/cacheService.js
+const Redis = require('ioredis');
+
+class CacheService {
+  constructor() {
+    this.redis = new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: process.env.REDIS_PORT || 6379,
+      password: process.env.REDIS_PASSWORD,
+      retryDelayOnFailover: 100,
+      maxRetriesPerRequest: 3
+    });
+
+    this.redis.on('error', (error) => {
+      console.error('Redis connection error:', error);
+    });
+
+    this.redis.on('connect', () => {
+      console.log('Redis connected successfully');
+    });
+  }
+
+  async get(key) {
+    try {
+      const value = await this.redis.get(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error('Cache get error:', error);
+      return null;
+    }
+  }
+
+  async set(key, value, ttl = 3600) {
+    try {
+      await this.redis.setex(key, ttl, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error('Cache set error:', error);
+      return false;
+    }
+  }
+
+  async del(key) {
+    try {
+      await this.redis.del(key);
+      return true;
+    } catch (error) {
+      console.error('Cache delete error:', error);
+      return false;
+    }
+  }
+
+  async clearPattern(pattern) {
+    try {
+      const keys = await this.redis.keys(pattern);
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+      }
+      return true;
+    } catch (error) {
+      console.error('Cache clear pattern error:', error);
+      return false;
+    }
+  }
+
+  generateKey(prefix, params) {
+    const sortedParams = Object.keys(params)
+      .sort()
+      .map(key => `${key}:${params[key]}`)
+      .join(':');
+    return `${prefix}:${sortedParams}`;
+  }
+}
+
+module.exports = new CacheService();
+```
+
+### API Response Caching
+
+Implement caching in your controllers:
+
+```javascript
+// src/controllers/taskController.js
+const cacheService = require('../services/cacheService');
+
+// Update getTasks function with caching
+const getTasks = async (req, res) => {
+  try {
+    const {
+      status,
+      priority,
+      category,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    // Generate cache key
+    const cacheKey = cacheService.generateKey('tasks', {
+      userId: req.user._id,
+      status,
+      priority,
+      category,
+      search,
+      sortBy,
+      sortOrder,
+      page,
+      limit
+    });
+
+    // Try to get from cache first
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return res.json({
+        success: true,
+        data: cachedResult,
+        cached: true
+      });
+    }
+
+    // Build filter object
+    const filter = { user: req.user._id };
+    
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (category) filter.category = category;
+    
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    const tasks = await Task.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('user', 'name email');
+
+    const total = await Task.countDocuments(filter);
+
+    const result = {
+      tasks,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    };
+
+    // Cache the result for 5 minutes
+    await cacheService.set(cacheKey, result, 300);
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to fetch tasks',
+        code: 'GET_TASKS_ERROR'
+      }
+    });
+  }
+};
+
+// Clear cache when tasks are modified
+const createTask = async (req, res) => {
+  try {
+    const taskData = {
+      ...req.body,
+      user: req.user._id
+    };
+
+    const task = new Task(taskData);
+    await task.save();
+
+    await task.populate('user', 'name email');
+
+    // Clear user's task cache
+    await cacheService.clearPattern(`tasks:userId:${req.user._id}:*`);
+
+    // Emit real-time event
+    const io = getIO();
+    io.to(`user-${req.user._id}`).emit('task-created', {
+      task,
+      userId: req.user._id
+    });
+
+    res.status(201).json({
+      success: true,
+      data: task,
+      message: 'Task created successfully'
+    });
+
+  } catch (error) {
+    console.error('Create task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to create task',
+        code: 'CREATE_TASK_ERROR'
+      }
+    });
+  }
+};
+```
+
+### AI Collaboration: Performance Optimization
+
+```
+"Optimize performance for my [app type] application:
+App concept: [your chosen app]
+Optimization areas: [database, caching, frontend]
+Technologies: [Redis, MongoDB, React]
+
+Please provide:
+- Database optimization strategies
+- Caching implementation
+- Frontend performance tips
+- API response optimization
+- Monitoring and metrics"
+```
+
+## Success Criteria for Day 5
+
+✅ **Advanced search implemented** with comprehensive filtering  
+✅ **Data visualization created** with interactive charts  
+✅ **Export/import features** implemented for multiple formats  
+✅ **Performance optimizations** applied throughout the app  
+✅ **Caching system** implemented for better response times  
+✅ **Database indexes** created for optimal query performance  
+✅ **Real-time analytics** implemented with live updates  
+✅ **User experience** enhanced with advanced features  
+
+## Next Steps
+
+Tomorrow we'll focus on **Testing and Quality Assurance** where you'll:
+- Write comprehensive unit and integration tests
+- Perform user acceptance testing
+- Conduct performance testing
+- Implement security audits
+- Fix bugs and optimize performance
+
+Your application now has advanced features that make it competitive and user-friendly! 

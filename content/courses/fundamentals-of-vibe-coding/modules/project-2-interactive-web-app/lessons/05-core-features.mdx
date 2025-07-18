@@ -1,0 +1,1425 @@
+---
+title: "Core Features Development"
+description: "Implement CRUD operations, create user interface components, and add real-time updates"
+type: "lesson"
+order: 5
+duration: "6 hours"
+---
+
+# Day 4: Core Features Development
+
+Today we'll build the core functionality of your application. We'll implement CRUD operations for your main entities, create user interface components, add data validation and error handling, and implement real-time updates. This is where your app becomes truly functional and user-friendly.
+
+## Step 1: Data Models Implementation
+
+### Task Management App - Task Model
+
+Create your main entity model (example for Task Management):
+
+```javascript
+// src/models/Task.js
+const mongoose = require('mongoose');
+
+const taskSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  title: {
+    type: String,
+    required: [true, 'Task title is required'],
+    trim: true,
+    maxlength: [100, 'Title cannot exceed 100 characters']
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Description cannot exceed 500 characters']
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in-progress', 'completed', 'cancelled'],
+    default: 'pending'
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium'
+  },
+  category: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Category cannot exceed 50 characters']
+  },
+  dueDate: {
+    type: Date
+  },
+  completedAt: {
+    type: Date
+  },
+  tags: [{
+    type: String,
+    trim: true
+  }],
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurringPattern: {
+    type: String,
+    enum: ['daily', 'weekly', 'monthly', 'yearly']
+  },
+  attachments: [{
+    filename: String,
+    url: String,
+    size: Number,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  notes: [{
+    content: String,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
+}, {
+  timestamps: true
+});
+
+// Indexes for better query performance
+taskSchema.index({ user: 1, status: 1 });
+taskSchema.index({ user: 1, dueDate: 1 });
+taskSchema.index({ user: 1, category: 1 });
+
+// Virtual for checking if task is overdue
+taskSchema.virtual('isOverdue').get(function() {
+  if (!this.dueDate || this.status === 'completed') return false;
+  return new Date() > this.dueDate;
+});
+
+// Method to mark task as completed
+taskSchema.methods.markCompleted = function() {
+  this.status = 'completed';
+  this.completedAt = new Date();
+  return this.save();
+};
+
+// Method to update task status
+taskSchema.methods.updateStatus = function(newStatus) {
+  this.status = newStatus;
+  if (newStatus === 'completed') {
+    this.completedAt = new Date();
+  } else {
+    this.completedAt = undefined;
+  }
+  return this.save();
+};
+
+module.exports = mongoose.model('Task', taskSchema);
+```
+
+### Habit Tracker App - Habit Model
+
+For a habit tracker app:
+
+```javascript
+// src/models/Habit.js
+const mongoose = require('mongoose');
+
+const habitSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  name: {
+    type: String,
+    required: [true, 'Habit name is required'],
+    trim: true,
+    maxlength: [100, 'Habit name cannot exceed 100 characters']
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Description cannot exceed 500 characters']
+  },
+  category: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Category cannot exceed 50 characters']
+  },
+  frequency: {
+    type: String,
+    enum: ['daily', 'weekly', 'monthly'],
+    default: 'daily'
+  },
+  target: {
+    type: Number,
+    default: 1,
+    min: [1, 'Target must be at least 1']
+  },
+  unit: {
+    type: String,
+    trim: true,
+    maxlength: [20, 'Unit cannot exceed 20 characters']
+  },
+  color: {
+    type: String,
+    default: '#007bff',
+    match: [/^#[0-9A-F]{6}$/i, 'Color must be a valid hex color']
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  startDate: {
+    type: Date,
+    default: Date.now
+  },
+  endDate: {
+    type: Date
+  },
+  logs: [{
+    date: {
+      type: Date,
+      required: true
+    },
+    value: {
+      type: Number,
+      required: true,
+      min: [0, 'Value cannot be negative']
+    },
+    notes: {
+      type: String,
+      trim: true,
+      maxlength: [200, 'Notes cannot exceed 200 characters']
+    }
+  }]
+}, {
+  timestamps: true
+});
+
+// Indexes
+habitSchema.index({ user: 1, isActive: 1 });
+habitSchema.index({ user: 1, category: 1 });
+
+// Virtual for current streak
+habitSchema.virtual('currentStreak').get(function() {
+  if (!this.logs.length) return 0;
+  
+  const sortedLogs = this.logs.sort((a, b) => b.date - a.date);
+  let streak = 0;
+  let currentDate = new Date();
+  
+  for (const log of sortedLogs) {
+    const logDate = new Date(log.date);
+    const daysDiff = Math.floor((currentDate - logDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff <= 1) {
+      streak++;
+      currentDate = logDate;
+    } else {
+      break;
+    }
+  }
+  
+  return streak;
+});
+
+// Method to log habit completion
+habitSchema.methods.logCompletion = function(value, notes = '') {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Check if already logged today
+  const existingLog = this.logs.find(log => {
+    const logDate = new Date(log.date);
+    logDate.setHours(0, 0, 0, 0);
+    return logDate.getTime() === today.getTime();
+  });
+  
+  if (existingLog) {
+    existingLog.value = value;
+    existingLog.notes = notes;
+  } else {
+    this.logs.push({
+      date: today,
+      value,
+      notes
+    });
+  }
+  
+  return this.save();
+};
+
+module.exports = mongoose.model('Habit', habitSchema);
+```
+
+### AI Collaboration: Data Models
+
+```
+"Create data models for my [app type] application:
+App concept: [your chosen app]
+Features: [list of main features]
+Database: [MongoDB/PostgreSQL]
+
+Please provide:
+- Complete data model with validation
+- Indexing recommendations
+- Virtual properties and methods
+- Data relationships
+- Performance optimization tips"
+```
+
+## Step 2: CRUD Controllers Implementation
+
+### Task Controller (Example)
+
+Create comprehensive CRUD operations:
+
+```javascript
+// src/controllers/taskController.js
+const Task = require('../models/Task');
+
+// Create new task
+const createTask = async (req, res) => {
+  try {
+    const taskData = {
+      ...req.body,
+      user: req.user._id
+    };
+
+    const task = new Task(taskData);
+    await task.save();
+
+    await task.populate('user', 'name email');
+
+    res.status(201).json({
+      success: true,
+      data: task,
+      message: 'Task created successfully'
+    });
+
+  } catch (error) {
+    console.error('Create task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to create task',
+        code: 'CREATE_TASK_ERROR'
+      }
+    });
+  }
+};
+
+// Get all tasks for user
+const getTasks = async (req, res) => {
+  try {
+    const {
+      status,
+      priority,
+      category,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    // Build filter object
+    const filter = { user: req.user._id };
+    
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (category) filter.category = category;
+    
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    const tasks = await Task.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('user', 'name email');
+
+    const total = await Task.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: {
+        tasks,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to fetch tasks',
+        code: 'GET_TASKS_ERROR'
+      }
+    });
+  }
+};
+
+// Get single task
+const getTask = async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    }).populate('user', 'name email');
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Task not found',
+          code: 'TASK_NOT_FOUND'
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: task
+    });
+
+  } catch (error) {
+    console.error('Get task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to fetch task',
+        code: 'GET_TASK_ERROR'
+      }
+    });
+  }
+};
+
+// Update task
+const updateTask = async (req, res) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        user: req.user._id
+      },
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    ).populate('user', 'name email');
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Task not found',
+          code: 'TASK_NOT_FOUND'
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: task,
+      message: 'Task updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Update task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to update task',
+        code: 'UPDATE_TASK_ERROR'
+      }
+    });
+  }
+};
+
+// Delete task
+const deleteTask = async (req, res) => {
+  try {
+    const task = await Task.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Task not found',
+          code: 'TASK_NOT_FOUND'
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Task deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to delete task',
+        code: 'DELETE_TASK_ERROR'
+      }
+    });
+  }
+};
+
+// Mark task as completed
+const completeTask = async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Task not found',
+          code: 'TASK_NOT_FOUND'
+        }
+      });
+    }
+
+    await task.markCompleted();
+
+    res.json({
+      success: true,
+      data: task,
+      message: 'Task marked as completed'
+    });
+
+  } catch (error) {
+    console.error('Complete task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to complete task',
+        code: 'COMPLETE_TASK_ERROR'
+      }
+    });
+  }
+};
+
+module.exports = {
+  createTask,
+  getTasks,
+  getTask,
+  updateTask,
+  deleteTask,
+  completeTask
+};
+```
+
+### AI Collaboration: CRUD Controllers
+
+```
+"Create CRUD controllers for my [app type] application:
+App concept: [your chosen app]
+Features: [create, read, update, delete, search]
+Database: [MongoDB/PostgreSQL]
+
+Please provide:
+- Complete CRUD operations
+- Search and filtering functionality
+- Pagination implementation
+- Error handling strategies
+- Performance optimization tips"
+```
+
+## Step 3: Frontend Components Development
+
+### Task List Component
+
+Create reusable UI components:
+
+```jsx
+// src/components/tasks/TaskList.jsx
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
+import TaskItem from './TaskItem';
+import TaskForm from './TaskForm';
+import TaskFilters from './TaskFilters';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorMessage from '../common/ErrorMessage';
+
+const TaskList = () => {
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [filters, setFilters] = useState({
+    status: '',
+    priority: '',
+    category: '',
+    search: ''
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0
+  });
+
+  const fetchTasks = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams({
+        page,
+        limit: pagination.limit,
+        ...filters
+      });
+
+      const response = await api.get(`/tasks?${params}`);
+      const { tasks: newTasks, pagination: newPagination } = response.data.data;
+
+      setTasks(newTasks);
+      setPagination(newPagination);
+    } catch (error) {
+      setError(error.response?.data?.error?.message || 'Failed to fetch tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, [filters]);
+
+  const handleCreateTask = async (taskData) => {
+    try {
+      const response = await api.post('/tasks', taskData);
+      const newTask = response.data.data;
+      
+      setTasks(prev => [newTask, ...prev]);
+      setShowForm(false);
+      
+      // Show success message
+      toast.success('Task created successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.error?.message || 'Failed to create task');
+    }
+  };
+
+  const handleUpdateTask = async (taskId, updates) => {
+    try {
+      const response = await api.put(`/tasks/${taskId}`, updates);
+      const updatedTask = response.data.data;
+      
+      setTasks(prev => 
+        prev.map(task => 
+          task._id === taskId ? updatedTask : task
+        )
+      );
+      
+      toast.success('Task updated successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.error?.message || 'Failed to update task');
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      
+      setTasks(prev => prev.filter(task => task._id !== taskId));
+      toast.success('Task deleted successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.error?.message || 'Failed to delete task');
+    }
+  };
+
+  const handleCompleteTask = async (taskId) => {
+    try {
+      const response = await api.patch(`/tasks/${taskId}/complete`);
+      const completedTask = response.data.data;
+      
+      setTasks(prev => 
+        prev.map(task => 
+          task._id === taskId ? completedTask : task
+        )
+      );
+      
+      toast.success('Task completed!');
+    } catch (error) {
+      toast.error(error.response?.data?.error?.message || 'Failed to complete task');
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    fetchTasks(newPage);
+  };
+
+  if (loading && tasks.length === 0) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <div className="task-list-container">
+      <div className="task-list-header">
+        <h2>My Tasks</h2>
+        <button 
+          className="btn btn-primary"
+          onClick={() => setShowForm(true)}
+        >
+          Add New Task
+        </button>
+      </div>
+
+      <TaskFilters 
+        filters={filters}
+        onFilterChange={setFilters}
+      />
+
+      {error && <ErrorMessage message={error} />}
+
+      {showForm && (
+        <TaskForm
+          onSubmit={handleCreateTask}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
+
+      <div className="task-list">
+        {tasks.length === 0 ? (
+          <div className="empty-state">
+            <p>No tasks found. Create your first task to get started!</p>
+          </div>
+        ) : (
+          tasks.map(task => (
+            <TaskItem
+              key={task._id}
+              task={task}
+              onUpdate={handleUpdateTask}
+              onDelete={handleDeleteTask}
+              onComplete={handleCompleteTask}
+            />
+          ))
+        )}
+      </div>
+
+      {pagination.pages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={pagination.page === 1}
+            onClick={() => handlePageChange(pagination.page - 1)}
+          >
+            Previous
+          </button>
+          
+          <span>
+            Page {pagination.page} of {pagination.pages}
+          </span>
+          
+          <button
+            disabled={pagination.page === pagination.pages}
+            onClick={() => handlePageChange(pagination.page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TaskList;
+```
+
+### Task Item Component
+
+```jsx
+// src/components/tasks/TaskItem.jsx
+import React, { useState } from 'react';
+import { format } from 'date-fns';
+import TaskForm from './TaskForm';
+
+const TaskItem = ({ task, onUpdate, onDelete, onComplete }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = async (updates) => {
+    await onUpdate(task._id, updates);
+    setIsEditing(false);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      setIsDeleting(true);
+      await onDelete(task._id);
+      setIsDeleting(false);
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    const colors = {
+      low: 'text-green-600',
+      medium: 'text-yellow-600',
+      high: 'text-orange-600',
+      urgent: 'text-red-600'
+    };
+    return colors[priority] || 'text-gray-600';
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'bg-gray-100 text-gray-800',
+      'in-progress': 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  if (isEditing) {
+    return (
+      <TaskForm
+        task={task}
+        onSubmit={handleSave}
+        onCancel={() => setIsEditing(false)}
+      />
+    );
+  }
+
+  return (
+    <div className={`task-item ${task.isOverdue ? 'overdue' : ''}`}>
+      <div className="task-header">
+        <div className="task-title">
+          <h3>{task.title}</h3>
+          {task.isOverdue && (
+            <span className="overdue-badge">Overdue</span>
+          )}
+        </div>
+        
+        <div className="task-actions">
+          <button
+            className="btn btn-sm btn-outline"
+            onClick={handleEdit}
+            disabled={isDeleting}
+          >
+            Edit
+          </button>
+          
+          {task.status !== 'completed' && (
+            <button
+              className="btn btn-sm btn-success"
+              onClick={() => onComplete(task._id)}
+              disabled={isDeleting}
+            >
+              Complete
+            </button>
+          )}
+          
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </div>
+
+      {task.description && (
+        <p className="task-description">{task.description}</p>
+      )}
+
+      <div className="task-meta">
+        <span className={`priority ${getPriorityColor(task.priority)}`}>
+          {task.priority}
+        </span>
+        
+        <span className={`status ${getStatusColor(task.status)}`}>
+          {task.status}
+        </span>
+        
+        {task.category && (
+          <span className="category">{task.category}</span>
+        )}
+        
+        {task.dueDate && (
+          <span className="due-date">
+            Due: {format(new Date(task.dueDate), 'MMM dd, yyyy')}
+          </span>
+        )}
+      </div>
+
+      {task.tags && task.tags.length > 0 && (
+        <div className="task-tags">
+          {task.tags.map((tag, index) => (
+            <span key={index} className="tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TaskItem;
+```
+
+### AI Collaboration: Frontend Components
+
+```
+"Create frontend components for my [app type] application:
+App concept: [your chosen app]
+Components: [list, item, form, filters]
+Features: [CRUD operations, real-time updates]
+
+Please provide:
+- Component structure and hierarchy
+- State management integration
+- User interaction handling
+- Responsive design patterns
+- Performance optimization tips"
+```
+
+## Step 4: Real-time Updates Implementation
+
+### WebSocket Setup (Backend)
+
+Implement real-time functionality:
+
+```javascript
+// src/services/socketService.js
+const socketIo = require('socket.io');
+
+let io;
+
+const initializeSocket = (server) => {
+  io = socketIo(server, {
+    cors: {
+      origin: process.env.FRONTEND_URL || "http://localhost:3000",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+
+    // Join user to their personal room
+    socket.on('join-user-room', (userId) => {
+      socket.join(`user-${userId}`);
+      console.log(`User ${userId} joined their room`);
+    });
+
+    // Handle task updates
+    socket.on('task-updated', (data) => {
+      socket.to(`user-${data.userId}`).emit('task-updated', data);
+    });
+
+    // Handle task creation
+    socket.on('task-created', (data) => {
+      socket.to(`user-${data.userId}`).emit('task-created', data);
+    });
+
+    // Handle task deletion
+    socket.on('task-deleted', (data) => {
+      socket.to(`user-${data.userId}`).emit('task-deleted', data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id);
+    });
+  });
+
+  return io;
+};
+
+const getIO = () => {
+  if (!io) {
+    throw new Error('Socket.io not initialized');
+  }
+  return io;
+};
+
+module.exports = {
+  initializeSocket,
+  getIO
+};
+```
+
+### Real-time Updates in Controllers
+
+Update your controllers to emit real-time events:
+
+```javascript
+// src/controllers/taskController.js
+const { getIO } = require('../services/socketService');
+
+// Update createTask function
+const createTask = async (req, res) => {
+  try {
+    const taskData = {
+      ...req.body,
+      user: req.user._id
+    };
+
+    const task = new Task(taskData);
+    await task.save();
+
+    await task.populate('user', 'name email');
+
+    // Emit real-time event
+    const io = getIO();
+    io.to(`user-${req.user._id}`).emit('task-created', {
+      task,
+      userId: req.user._id
+    });
+
+    res.status(201).json({
+      success: true,
+      data: task,
+      message: 'Task created successfully'
+    });
+
+  } catch (error) {
+    console.error('Create task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to create task',
+        code: 'CREATE_TASK_ERROR'
+      }
+    });
+  }
+};
+
+// Update updateTask function
+const updateTask = async (req, res) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        user: req.user._id
+      },
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    ).populate('user', 'name email');
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Task not found',
+          code: 'TASK_NOT_FOUND'
+        }
+      });
+    }
+
+    // Emit real-time event
+    const io = getIO();
+    io.to(`user-${req.user._id}`).emit('task-updated', {
+      task,
+      userId: req.user._id
+    });
+
+    res.json({
+      success: true,
+      data: task,
+      message: 'Task updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Update task error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to update task',
+        code: 'UPDATE_TASK_ERROR'
+      }
+    });
+  }
+};
+```
+
+### Frontend Socket Integration
+
+```javascript
+// src/services/socketService.js
+import io from 'socket.io-client';
+
+class SocketService {
+  constructor() {
+    this.socket = null;
+    this.isConnected = false;
+  }
+
+  connect(token) {
+    this.socket = io(process.env.REACT_APP_API_URL, {
+      auth: {
+        token
+      }
+    });
+
+    this.socket.on('connect', () => {
+      console.log('Connected to server');
+      this.isConnected = true;
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+      this.isConnected = false;
+    });
+
+    return this.socket;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.isConnected = false;
+    }
+  }
+
+  joinUserRoom(userId) {
+    if (this.socket) {
+      this.socket.emit('join-user-room', userId);
+    }
+  }
+
+  onTaskCreated(callback) {
+    if (this.socket) {
+      this.socket.on('task-created', callback);
+    }
+  }
+
+  onTaskUpdated(callback) {
+    if (this.socket) {
+      this.socket.on('task-updated', callback);
+    }
+  }
+
+  onTaskDeleted(callback) {
+    if (this.socket) {
+      this.socket.on('task-deleted', callback);
+    }
+  }
+}
+
+export default new SocketService();
+```
+
+### AI Collaboration: Real-time Updates
+
+```
+"Implement real-time updates for my [app type] application:
+App concept: [your chosen app]
+Real-time features: [live updates, notifications]
+Technology: [WebSocket/Socket.io]
+
+Please provide:
+- WebSocket server setup
+- Real-time event handling
+- Frontend socket integration
+- Performance optimization
+- Error handling strategies"
+```
+
+## Step 5: Mobile Responsive Design
+
+### Responsive CSS Framework
+
+Implement mobile-first responsive design:
+
+```css
+/* src/styles/components/TaskList.css */
+.task-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.task-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.task-list-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.task-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.task-filters select,
+.task-filters input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.task-list {
+  display: grid;
+  gap: 15px;
+}
+
+.task-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.task-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.task-item.overdue {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+.task-title h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.overdue-badge {
+  background: #ef4444;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.task-description {
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.task-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.task-meta span {
+  font-size: 0.875rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.task-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .task-list-container {
+    padding: 10px;
+  }
+
+  .task-list-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .task-list-header h2 {
+    text-align: center;
+  }
+
+  .task-filters {
+    flex-direction: column;
+  }
+
+  .task-filters select,
+  .task-filters input {
+    width: 100%;
+  }
+
+  .task-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .task-actions {
+    justify-content: center;
+  }
+
+  .task-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .task-item {
+    padding: 12px;
+  }
+
+  .task-title h3 {
+    font-size: 1rem;
+  }
+
+  .task-actions {
+    flex-direction: column;
+  }
+
+  .task-actions button {
+    width: 100%;
+  }
+}
+```
+
+### AI Collaboration: Mobile Design
+
+```
+"Create mobile-responsive design for my [app type] application:
+App concept: [your chosen app]
+Design system: [CSS framework, components]
+Responsive breakpoints: [mobile, tablet, desktop]
+
+Please provide:
+- Mobile-first CSS approach
+- Responsive component design
+- Touch-friendly interactions
+- Performance optimization
+- Accessibility considerations"
+```
+
+## Success Criteria for Day 4
+
+✅ **Data models implemented** with proper validation and relationships  
+✅ **CRUD controllers created** with comprehensive functionality  
+✅ **Frontend components built** with reusable design patterns  
+✅ **Real-time updates implemented** with WebSocket integration  
+✅ **Mobile responsive design** implemented with touch-friendly UI  
+✅ **Error handling** implemented throughout the application  
+✅ **Performance optimization** applied to queries and components  
+✅ **User experience** optimized with intuitive interactions  
+
+## Next Steps
+
+Tomorrow we'll focus on **Advanced Features and Polish** where you'll:
+- Add search and filtering functionality
+- Implement data visualization and charts
+- Create export/import features
+- Add performance optimizations
+- Implement offline functionality
+
+Your core features are now complete! Your application is functional, responsive, and ready for advanced enhancements. 

@@ -1,0 +1,1466 @@
+---
+title: "Testing and Deployment"
+description: "Comprehensive testing, quality assurance, and deployment to production"
+type: "lesson"
+order: 7
+duration: "4 hours"
+---
+
+# Day 6-7: Testing and Deployment
+
+Today we'll thoroughly test your application, fix any issues, and deploy it to production. We'll write comprehensive tests, perform quality assurance, conduct security audits, and deploy your application so it's live and accessible to users. This is the final step in making your application production-ready.
+
+## Step 1: Comprehensive Testing Strategy
+
+### Unit Testing Setup
+
+Set up comprehensive testing infrastructure:
+
+```javascript
+// tests/setup.js
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+let mongoServer;
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
+  await mongoose.connect(mongoUri);
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
+});
+
+afterEach(async () => {
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    await collections[key].deleteMany();
+  }
+});
+```
+
+### Authentication Tests
+
+```javascript
+// tests/auth.test.js
+const request = require('supertest');
+const app = require('../src/app');
+const User = require('../src/models/User');
+const { generateToken } = require('../src/config/auth');
+
+describe('Authentication Endpoints', () => {
+  describe('POST /api/auth/register', () => {
+    it('should register a new user with valid data', async () => {
+      const userData = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(userData)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.user.email).toBe(userData.email);
+      expect(response.body.data.token).toBeDefined();
+      expect(response.body.data.user.password).toBeUndefined();
+    });
+
+    it('should not register user with existing email', async () => {
+      const userData = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123'
+      };
+
+      // Create first user
+      await request(app)
+        .post('/api/auth/register')
+        .send(userData);
+
+      // Try to create second user with same email
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(userData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('USER_EXISTS');
+    });
+
+    it('should validate required fields', async () => {
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should validate email format', async () => {
+      const userData = {
+        name: 'Test User',
+        email: 'invalid-email',
+        password: 'Password123'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(userData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('email');
+    });
+
+    it('should validate password strength', async () => {
+      const userData = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: '123'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(userData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('password');
+    });
+  });
+
+  describe('POST /api/auth/login', () => {
+    let testUser;
+
+    beforeEach(async () => {
+      testUser = new User({
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123'
+      });
+      await testUser.save();
+    });
+
+    it('should login with valid credentials', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'test@example.com',
+          password: 'Password123'
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.token).toBeDefined();
+      expect(response.body.data.user.email).toBe('test@example.com');
+    });
+
+    it('should not login with invalid email', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'Password123'
+        })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('should not login with invalid password', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'test@example.com',
+          password: 'WrongPassword'
+        })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('should not login with missing credentials', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('MISSING_CREDENTIALS');
+    });
+  });
+
+  describe('Authentication Middleware', () => {
+    let testUser;
+    let authToken;
+
+    beforeEach(async () => {
+      testUser = new User({
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123'
+      });
+      await testUser.save();
+      authToken = generateToken(testUser._id);
+    });
+
+    it('should allow access with valid token', async () => {
+      const response = await request(app)
+        .get('/api/users/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access without token', async () => {
+      const response = await request(app)
+        .get('/api/users/profile')
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('TOKEN_REQUIRED');
+    });
+
+    it('should deny access with invalid token', async () => {
+      const response = await request(app)
+        .get('/api/users/profile')
+        .set('Authorization', 'Bearer invalid-token')
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('INVALID_TOKEN');
+    });
+  });
+});
+```
+
+### Task Management Tests
+
+```javascript
+// tests/tasks.test.js
+const request = require('supertest');
+const app = require('../src/app');
+const User = require('../models/User');
+const Task = require('../models/Task');
+const { generateToken } = require('../config/auth');
+
+describe('Task Management Endpoints', () => {
+  let testUser;
+  let authToken;
+
+  beforeEach(async () => {
+    testUser = new User({
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'Password123'
+    });
+    await testUser.save();
+    authToken = generateToken(testUser._id);
+  });
+
+  describe('POST /api/tasks', () => {
+    it('should create a new task', async () => {
+      const taskData = {
+        title: 'Test Task',
+        description: 'Test Description',
+        priority: 'high',
+        category: 'work'
+      };
+
+      const response = await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(taskData)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.title).toBe(taskData.title);
+      expect(response.body.data.user).toBe(testUser._id.toString());
+    });
+
+    it('should validate required fields', async () => {
+      const response = await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('title');
+    });
+
+    it('should validate priority values', async () => {
+      const taskData = {
+        title: 'Test Task',
+        priority: 'invalid-priority'
+      };
+
+      const response = await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(taskData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('GET /api/tasks', () => {
+    beforeEach(async () => {
+      // Create test tasks
+      const tasks = [
+        { title: 'Task 1', user: testUser._id, status: 'pending' },
+        { title: 'Task 2', user: testUser._id, status: 'completed' },
+        { title: 'Task 3', user: testUser._id, priority: 'high' }
+      ];
+
+      await Task.insertMany(tasks);
+    });
+
+    it('should get all tasks for user', async () => {
+      const response = await request(app)
+        .get('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.tasks).toHaveLength(3);
+    });
+
+    it('should filter tasks by status', async () => {
+      const response = await request(app)
+        .get('/api/tasks?status=completed')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.tasks).toHaveLength(1);
+      expect(response.body.data.tasks[0].status).toBe('completed');
+    });
+
+    it('should search tasks by title', async () => {
+      const response = await request(app)
+        .get('/api/tasks?search=Task 1')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.tasks).toHaveLength(1);
+      expect(response.body.data.tasks[0].title).toBe('Task 1');
+    });
+
+    it('should paginate results', async () => {
+      const response = await request(app)
+        .get('/api/tasks?page=1&limit=2')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.tasks).toHaveLength(2);
+      expect(response.body.data.pagination.page).toBe(1);
+      expect(response.body.data.pagination.limit).toBe(2);
+    });
+  });
+
+  describe('PUT /api/tasks/:id', () => {
+    let testTask;
+
+    beforeEach(async () => {
+      testTask = new Task({
+        title: 'Original Task',
+        user: testUser._id,
+        status: 'pending'
+      });
+      await testTask.save();
+    });
+
+    it('should update task', async () => {
+      const updates = {
+        title: 'Updated Task',
+        status: 'completed'
+      };
+
+      const response = await request(app)
+        .put(`/api/tasks/${testTask._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updates)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.title).toBe('Updated Task');
+      expect(response.body.data.status).toBe('completed');
+    });
+
+    it('should not update task of another user', async () => {
+      const otherUser = new User({
+        name: 'Other User',
+        email: 'other@example.com',
+        password: 'Password123'
+      });
+      await otherUser.save();
+
+      const otherTask = new Task({
+        title: 'Other Task',
+        user: otherUser._id
+      });
+      await otherTask.save();
+
+      const response = await request(app)
+        .put(`/api/tasks/${otherTask._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: 'Updated Task' })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('DELETE /api/tasks/:id', () => {
+    let testTask;
+
+    beforeEach(async () => {
+      testTask = new Task({
+        title: 'Task to Delete',
+        user: testUser._id
+      });
+      await testTask.save();
+    });
+
+    it('should delete task', async () => {
+      const response = await request(app)
+        .delete(`/api/tasks/${testTask._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Verify task is deleted
+      const deletedTask = await Task.findById(testTask._id);
+      expect(deletedTask).toBeNull();
+    });
+
+    it('should not delete task of another user', async () => {
+      const otherUser = new User({
+        name: 'Other User',
+        email: 'other@example.com',
+        password: 'Password123'
+      });
+      await otherUser.save();
+
+      const otherTask = new Task({
+        title: 'Other Task',
+        user: otherUser._id
+      });
+      await otherTask.save();
+
+      const response = await request(app)
+        .delete(`/api/tasks/${otherTask._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+});
+```
+
+### AI Collaboration: Testing Strategy
+
+```
+"Create comprehensive tests for my [app type] application:
+App concept: [your chosen app]
+Testing areas: [unit, integration, e2e]
+Coverage: [authentication, CRUD, validation]
+
+Please provide:
+- Test setup and configuration
+- Unit test examples
+- Integration test strategies
+- Test data management
+- Coverage reporting setup"
+```
+
+## Step 2: Frontend Testing
+
+### React Component Testing
+
+```javascript
+// src/components/__tests__/TaskList.test.jsx
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '../../contexts/AuthContext';
+import TaskList from '../tasks/TaskList';
+
+// Mock API service
+jest.mock('../../services/api', () => ({
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn()
+}));
+
+const mockTasks = [
+  {
+    _id: '1',
+    title: 'Test Task 1',
+    description: 'Test Description 1',
+    status: 'pending',
+    priority: 'high',
+    category: 'work',
+    createdAt: '2023-01-01T00:00:00.000Z'
+  },
+  {
+    _id: '2',
+    title: 'Test Task 2',
+    description: 'Test Description 2',
+    status: 'completed',
+    priority: 'medium',
+    category: 'personal',
+    createdAt: '2023-01-02T00:00:00.000Z'
+  }
+];
+
+const renderWithProviders = (component) => {
+  return render(
+    <BrowserRouter>
+      <AuthProvider>
+        {component}
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
+
+describe('TaskList Component', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should render task list', async () => {
+    const api = require('../../services/api');
+    api.get.mockResolvedValue({
+      data: {
+        data: {
+          tasks: mockTasks,
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 2,
+            pages: 1
+          }
+        }
+      }
+    });
+
+    renderWithProviders(<TaskList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Task 2')).toBeInTheDocument();
+    });
+  });
+
+  it('should show loading state', () => {
+    const api = require('../../services/api');
+    api.get.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+    renderWithProviders(<TaskList />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('should show empty state when no tasks', async () => {
+    const api = require('../../services/api');
+    api.get.mockResolvedValue({
+      data: {
+        data: {
+          tasks: [],
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            pages: 0
+          }
+        }
+      }
+    });
+
+    renderWithProviders(<TaskList />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No tasks found/)).toBeInTheDocument();
+    });
+  });
+
+  it('should create new task', async () => {
+    const api = require('../../services/api');
+    api.get.mockResolvedValue({
+      data: {
+        data: {
+          tasks: mockTasks,
+          pagination: { page: 1, limit: 10, total: 2, pages: 1 }
+        }
+      }
+    });
+
+    const newTask = {
+      _id: '3',
+      title: 'New Task',
+      description: 'New Description',
+      status: 'pending',
+      priority: 'medium'
+    };
+
+    api.post.mockResolvedValue({
+      data: { data: newTask }
+    });
+
+    renderWithProviders(<TaskList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Add New Task')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Add New Task'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Create Task')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText('Title'), {
+      target: { value: 'New Task' }
+    });
+
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'New Description' }
+    });
+
+    fireEvent.click(screen.getByText('Create Task'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/tasks', {
+        title: 'New Task',
+        description: 'New Description'
+      });
+    });
+  });
+
+  it('should filter tasks', async () => {
+    const api = require('../../services/api');
+    api.get.mockResolvedValue({
+      data: {
+        data: {
+          tasks: mockTasks,
+          pagination: { page: 1, limit: 10, total: 2, pages: 1 }
+        }
+      }
+    });
+
+    renderWithProviders(<TaskList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Test Task 1')).toBeInTheDocument();
+    });
+
+    const statusFilter = screen.getByLabelText('Status');
+    fireEvent.change(statusFilter, { target: { value: 'completed' } });
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith(
+        expect.stringContaining('status=completed')
+      );
+    });
+  });
+});
+```
+
+### API Service Testing
+
+```javascript
+// src/services/__tests__/api.test.js
+import api from '../api';
+
+// Mock fetch
+global.fetch = jest.fn();
+
+describe('API Service', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+  });
+
+  it('should make GET request', async () => {
+    const mockResponse = { data: 'test' };
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse
+    });
+
+    const result = await api.get('/test');
+
+    expect(fetch).toHaveBeenCalledWith('/test', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('should make POST request with data', async () => {
+    const mockData = { title: 'Test Task' };
+    const mockResponse = { success: true };
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse
+    });
+
+    const result = await api.post('/tasks', mockData);
+
+    expect(fetch).toHaveBeenCalledWith('/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(mockData)
+    });
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('should handle errors', async () => {
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    await expect(api.get('/test')).rejects.toThrow('Network error');
+  });
+
+  it('should include auth token in headers', async () => {
+    localStorage.setItem('token', 'test-token');
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: 'test' })
+    });
+
+    await api.get('/test');
+
+    expect(fetch).toHaveBeenCalledWith('/test', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer test-token'
+      }
+    });
+  });
+});
+```
+
+### AI Collaboration: Frontend Testing
+
+```
+"Create frontend tests for my [app type] React application:
+App concept: [your chosen app]
+Testing: [components, hooks, services]
+Library: [Jest, React Testing Library]
+
+Please provide:
+- Component testing setup
+- Hook testing strategies
+- Service mocking examples
+- User interaction testing
+- Accessibility testing"
+```
+
+## Step 3: Performance Testing
+
+### Load Testing
+
+```javascript
+// tests/performance/load.test.js
+const autocannon = require('autocannon');
+const { spawn } = require('child_process');
+
+describe('Performance Tests', () => {
+  let serverProcess;
+
+  beforeAll(async () => {
+    // Start the server
+    serverProcess = spawn('npm', ['run', 'dev'], {
+      cwd: process.cwd(),
+      stdio: 'pipe'
+    });
+
+    // Wait for server to start
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  });
+
+  afterAll(async () => {
+    if (serverProcess) {
+      serverProcess.kill();
+    }
+  });
+
+  it('should handle concurrent requests', async () => {
+    const result = await autocannon({
+      url: 'http://localhost:5000/api/tasks',
+      connections: 10,
+      duration: 10,
+      headers: {
+        'Authorization': 'Bearer test-token'
+      }
+    });
+
+    expect(result.errors).toBe(0);
+    expect(result.timeouts).toBe(0);
+    expect(result.latency.p99).toBeLessThan(1000); // 99th percentile under 1s
+  });
+
+  it('should handle database queries efficiently', async () => {
+    const result = await autocannon({
+      url: 'http://localhost:5000/api/tasks?page=1&limit=50',
+      connections: 5,
+      duration: 5,
+      headers: {
+        'Authorization': 'Bearer test-token'
+      }
+    });
+
+    expect(result.errors).toBe(0);
+    expect(result.requests.average).toBeGreaterThan(100); // At least 100 req/s
+  });
+});
+```
+
+### Memory Leak Testing
+
+```javascript
+// tests/performance/memory.test.js
+const { performance } = require('perf_hooks');
+
+describe('Memory Tests', () => {
+  it('should not have memory leaks in task creation', async () => {
+    const initialMemory = process.memoryUsage().heapUsed;
+    
+    // Create many tasks
+    for (let i = 0; i < 1000; i++) {
+      await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          title: `Task ${i}`,
+          description: `Description ${i}`
+        });
+    }
+
+    // Force garbage collection
+    if (global.gc) {
+      global.gc();
+    }
+
+    const finalMemory = process.memoryUsage().heapUsed;
+    const memoryIncrease = finalMemory - initialMemory;
+    
+    // Memory increase should be reasonable (less than 50MB)
+    expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
+  });
+});
+```
+
+### AI Collaboration: Performance Testing
+
+```
+"Create performance tests for my [app type] application:
+App concept: [your chosen app]
+Testing areas: [load, memory, database]
+Tools: [autocannon, artillery, k6]
+
+Please provide:
+- Load testing setup
+- Performance benchmarks
+- Memory leak detection
+- Database performance tests
+- Optimization recommendations"
+```
+
+## Step 4: Security Testing
+
+### Security Audit
+
+```javascript
+// tests/security/security.test.js
+const request = require('supertest');
+const app = require('../../src/app');
+const crypto = require('crypto');
+
+describe('Security Tests', () => {
+  describe('Authentication Security', () => {
+    it('should not expose user passwords in responses', async () => {
+      const userData = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(userData);
+
+      expect(response.body.data.user.password).toBeUndefined();
+    });
+
+    it('should hash passwords properly', async () => {
+      const userData = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123'
+      };
+
+      await request(app)
+        .post('/api/auth/register')
+        .send(userData);
+
+      const user = await User.findOne({ email: userData.email });
+      expect(user.password).not.toBe(userData.password);
+      expect(user.password).toMatch(/^\$2[aby]\$\d{1,2}\$[./A-Za-z0-9]{53}$/);
+    });
+
+    it('should prevent brute force attacks', async () => {
+      const loginAttempts = [];
+      
+      for (let i = 0; i < 10; i++) {
+        const response = await request(app)
+          .post('/api/auth/login')
+          .send({
+            email: 'nonexistent@example.com',
+            password: 'wrongpassword'
+          });
+        
+        loginAttempts.push(response.status);
+      }
+
+      // Should start blocking after multiple failed attempts
+      expect(loginAttempts.slice(-3)).toContain(429);
+    });
+  });
+
+  describe('Authorization Security', () => {
+    it('should not allow access to other users data', async () => {
+      const user1 = new User({
+        name: 'User 1',
+        email: 'user1@example.com',
+        password: 'Password123'
+      });
+      await user1.save();
+
+      const user2 = new User({
+        name: 'User 2',
+        email: 'user2@example.com',
+        password: 'Password123'
+      });
+      await user2.save();
+
+      const task = new Task({
+        title: 'User 2 Task',
+        user: user2._id
+      });
+      await task.save();
+
+      const token1 = generateToken(user1._id);
+
+      const response = await request(app)
+        .get(`/api/tasks/${task._id}`)
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('Input Validation', () => {
+    it('should prevent SQL injection', async () => {
+      const maliciousInput = "'; DROP TABLE users; --";
+      
+      const response = await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          title: maliciousInput,
+          description: maliciousInput
+        });
+
+      // Should not crash and should handle input safely
+      expect(response.status).not.toBe(500);
+    });
+
+    it('should prevent XSS attacks', async () => {
+      const xssPayload = '<script>alert("xss")</script>';
+      
+      const response = await request(app)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          title: xssPayload,
+          description: xssPayload
+        });
+
+      expect(response.status).toBe(201);
+      
+      // Check that script tags are not executed
+      const task = await Task.findById(response.body.data._id);
+      expect(task.title).toBe(xssPayload); // Should be stored as-is, not executed
+    });
+  });
+
+  describe('Rate Limiting', () => {
+    it('should limit API requests', async () => {
+      const requests = [];
+      
+      for (let i = 0; i < 100; i++) {
+        const response = await request(app)
+          .get('/api/tasks')
+          .set('Authorization', `Bearer ${authToken}`);
+        
+        requests.push(response.status);
+      }
+
+      // Should start rate limiting after threshold
+      expect(requests).toContain(429);
+    });
+  });
+});
+```
+
+### AI Collaboration: Security Testing
+
+```
+"Create security tests for my [app type] application:
+App concept: [your chosen app]
+Security areas: [authentication, authorization, input validation]
+Vulnerabilities: [XSS, CSRF, SQL injection]
+
+Please provide:
+- Security test setup
+- Vulnerability scanning
+- Authentication security tests
+- Input validation tests
+- Security best practices"
+```
+
+## Step 5: Deployment Strategy
+
+### Production Environment Setup
+
+```javascript
+// src/config/production.js
+const productionConfig = {
+  database: {
+    url: process.env.MONGODB_URI,
+    options: {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      maxPoolSize: 20,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferMaxEntries: 0,
+      bufferCommands: false
+    }
+  },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    password: process.env.REDIS_PASSWORD,
+    retryDelayOnFailover: 100,
+    maxRetriesPerRequest: 3
+  },
+  cors: {
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+  },
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+  },
+  security: {
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", "data:", "https:"],
+        },
+      },
+    }
+  }
+};
+
+module.exports = productionConfig;
+```
+
+### Docker Configuration
+
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose port
+EXPOSE 5000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/health || exit 1
+
+# Start application
+CMD ["npm", "start"]
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/myapp
+      - REDIS_HOST=redis
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  mongo_data:
+  redis_data:
+```
+
+### Deployment Scripts
+
+```bash
+#!/bin/bash
+# deploy.sh
+
+set -e
+
+echo "Starting deployment..."
+
+# Build frontend
+echo "Building frontend..."
+cd frontend
+npm run build
+cd ..
+
+# Build backend
+echo "Building backend..."
+cd backend
+npm run build
+cd ..
+
+# Run tests
+echo "Running tests..."
+npm test
+
+# Build Docker image
+echo "Building Docker image..."
+docker build -t my-productivity-app .
+
+# Push to registry (if using cloud)
+# docker tag my-productivity-app your-registry/my-productivity-app
+# docker push your-registry/my-productivity-app
+
+# Deploy to production
+echo "Deploying to production..."
+docker-compose -f docker-compose.prod.yml up -d
+
+# Health check
+echo "Performing health check..."
+sleep 10
+curl -f http://localhost:5000/health || exit 1
+
+echo "Deployment completed successfully!"
+```
+
+### AI Collaboration: Deployment Strategy
+
+```
+"Create deployment strategy for my [app type] application:
+App concept: [your chosen app]
+Platform: [Vercel/Heroku/AWS/Docker]
+Requirements: [CI/CD, monitoring, scaling]
+
+Please provide:
+- Production environment setup
+- Docker configuration
+- CI/CD pipeline
+- Monitoring and logging
+- Scaling strategies"
+```
+
+## Step 6: Monitoring and Analytics
+
+### Application Monitoring
+
+```javascript
+// src/middleware/monitoring.js
+const winston = require('winston');
+const morgan = require('morgan');
+
+// Configure logging
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  defaultMeta: { service: 'productivity-app' },
+  transports: [
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'logs/combined.log' })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+
+// Request logging middleware
+const requestLogger = morgan('combined', {
+  stream: {
+    write: (message) => logger.info(message.trim())
+  }
+});
+
+// Performance monitoring middleware
+const performanceMonitor = (req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info('Request completed', {
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      userAgent: req.get('User-Agent')
+    });
+  });
+  
+  next();
+};
+
+// Error monitoring middleware
+const errorMonitor = (err, req, res, next) => {
+  logger.error('Application error', {
+    error: err.message,
+    stack: err.stack,
+    method: req.method,
+    url: req.url,
+    userAgent: req.get('User-Agent'),
+    ip: req.ip
+  });
+  
+  next(err);
+};
+
+module.exports = {
+  logger,
+  requestLogger,
+  performanceMonitor,
+  errorMonitor
+};
+```
+
+### Health Check Endpoint
+
+```javascript
+// src/routes/health.js
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const redis = require('../services/cacheService');
+
+router.get('/health', async (req, res) => {
+  const health = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    services: {}
+  };
+
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    health.services.database = {
+      status: dbState === 1 ? 'OK' : 'ERROR',
+      state: dbState
+    };
+
+    // Check Redis connection
+    try {
+      await redis.redis.ping();
+      health.services.redis = { status: 'OK' };
+    } catch (error) {
+      health.services.redis = { status: 'ERROR', error: error.message };
+    }
+
+    // Check memory usage
+    const memUsage = process.memoryUsage();
+    health.services.memory = {
+      status: 'OK',
+      usage: {
+        rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
+        heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+        heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`
+      }
+    };
+
+    // Overall status
+    const allServicesOK = Object.values(health.services)
+      .every(service => service.status === 'OK');
+    
+    health.status = allServicesOK ? 'OK' : 'ERROR';
+
+    const statusCode = allServicesOK ? 200 : 503;
+    res.status(statusCode).json(health);
+
+  } catch (error) {
+    health.status = 'ERROR';
+    health.error = error.message;
+    res.status(503).json(health);
+  }
+});
+
+module.exports = router;
+```
+
+### AI Collaboration: Monitoring
+
+```
+"Create monitoring for my [app type] application:
+App concept: [your chosen app]
+Monitoring: [logs, metrics, alerts]
+Tools: [Winston, Prometheus, Grafana]
+
+Please provide:
+- Logging configuration
+- Performance monitoring
+- Error tracking
+- Health checks
+- Alerting setup"
+```
+
+## Success Criteria for Day 6-7
+
+✅ **Comprehensive test suite** implemented with high coverage  
+✅ **Performance testing** completed with benchmarks met  
+✅ **Security audit** performed and vulnerabilities addressed  
+✅ **Production deployment** completed successfully  
+✅ **Monitoring and logging** implemented  
+✅ **Health checks** configured and working  
+✅ **Documentation** completed for users and developers  
+✅ **Application** live and accessible to users  
+
+## Final Project Checklist
+
+### Technical Requirements ✅
+- [ ] User authentication works securely
+- [ ] Data persists across sessions
+- [ ] Real-time updates function properly
+- [ ] Mobile-responsive design
+- [ ] Application is deployed and accessible
+- [ ] Database is properly configured
+- [ ] API endpoints are functional
+- [ ] Error handling is comprehensive
+
+### User Experience Requirements ✅
+- [ ] Intuitive and easy to use
+- [ ] Fast loading and responsive
+- [ ] Clear feedback for user actions
+- [ ] Accessible design principles
+- [ ] Consistent design language
+- [ ] Helpful error messages
+
+### Portfolio Requirements ✅
+- [ ] Code is well-organized and documented
+- [ ] Project is deployed and functional
+- [ ] README includes setup instructions
+- [ ] Screenshots and demos included
+- [ ] Technologies and features clearly listed
+- [ ] GitHub repository is professional
+
+## Congratulations! 🎉
+
+You've successfully built a complete, production-ready interactive web application! Your app includes:
+
+- **Full-stack functionality** with frontend and backend
+- **User authentication** with security best practices
+- **Real-time features** with WebSocket integration
+- **Advanced search and filtering**
+- **Data visualization** with interactive charts
+- **Export/import capabilities**
+- **Performance optimizations**
+- **Comprehensive testing**
+- **Production deployment**
+
+This project demonstrates your ability to build complex, scalable applications and showcases your full-stack development skills. You're now ready to tackle even more challenging projects and continue your journey as a developer!
+
+**Next Steps:**
+- Share your project on GitHub and LinkedIn
+- Add it to your portfolio
+- Consider adding more advanced features
+- Start planning your next project
+
+**Ready for Project 3:** Micro-SaaS - where you'll build a simple paid service with payment integration and user management! 

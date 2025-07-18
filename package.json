@@ -7,11 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "migrate:usernames": "tsx scripts/add-usernames.ts",
+    "migrate:profile-fields": "tsx scripts/add-profile-fields.ts",
     "type-check": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
     "validate-content": "node scripts/validate-content.js",
     "create-admin": "tsx scripts/create-admin.ts",
-    "create-contributor": "tsx scripts/create-contributor.ts"
+    "create-contributor": "tsx scripts/create-contributor.ts",
+    "migrate:social-media": "tsx scripts/add-social-media-field.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.10.0",
