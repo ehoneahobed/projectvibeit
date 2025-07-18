@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
-import { Course } from "@/lib/models"
+import { Course, User } from "@/lib/models"
 
 interface DatabaseModule {
   _id: string
@@ -34,6 +34,7 @@ interface TransformedCourse {
   modules: number
   lessons: number
   projects: number
+  students: number
   createdAt: Date
   updatedAt: Date
 }
@@ -67,6 +68,35 @@ export async function GET(_request: NextRequest) {
         updatedAt: Date
       }>
 
+    // Get enrollment counts for all courses
+    const enrollmentCounts = await User.aggregate([
+      {
+        $match: {
+          'progress.courseId': { $exists: true, $ne: [] }
+        }
+      },
+      {
+        $unwind: '$progress'
+      },
+      {
+        $group: {
+          _id: '$progress.courseId',
+          studentCount: { $addToSet: '$_id' }
+        }
+      },
+      {
+        $project: {
+          courseId: '$_id',
+          studentCount: { $size: '$studentCount' }
+        }
+      }
+    ])
+
+    // Create a map for quick lookup
+    const enrollmentMap = new Map(
+      enrollmentCounts.map(item => [item.courseId, item.studentCount])
+    )
+
     // Transform the data to include calculated fields
     const transformedCourses: TransformedCourse[] = courses.map(course => {
       const totalLessons = course.modules.reduce((acc: number, module) => {
@@ -76,6 +106,9 @@ export async function GET(_request: NextRequest) {
       const totalProjects = course.modules.reduce((acc: number, module) => {
         return acc + (module.lessons?.filter((lesson) => lesson.type === 'project').length || 0)
       }, 0)
+
+      // Get enrollment count for this course
+      const studentCount = enrollmentMap.get(course.slug) || 0
 
       return {
         id: course._id,
@@ -89,6 +122,7 @@ export async function GET(_request: NextRequest) {
         modules: course.modules.length,
         lessons: totalLessons,
         projects: totalProjects,
+        students: studentCount,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt
       }

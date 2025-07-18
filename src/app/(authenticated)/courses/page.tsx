@@ -5,8 +5,68 @@ import { Badge } from "@/components/ui/badge"
 import { BookOpen, Clock, Users, ArrowRight, Star } from "lucide-react"
 import { getPublishedCourses } from "@/lib/content"
 
-export default function CoursesPage() {
-  const publishedCourses = getPublishedCourses()
+interface CourseData {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  isPublished: boolean
+  estimatedHours: number
+  prerequisites: string[]
+  modules: number
+  lessons: number
+  projects: number
+  students: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+async function getCoursesWithEnrollment(): Promise<CourseData[]> {
+  try {
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/courses`, {
+      cache: 'no-store'
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch courses')
+    }
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      return result.data
+    } else {
+      throw new Error(result.error || 'Failed to fetch courses')
+    }
+  } catch (error) {
+    console.error('Error fetching courses with enrollment:', error)
+    // Fallback to static data if API fails
+    const staticCourses = getPublishedCourses()
+    return staticCourses.map(course => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      slug: course.slug,
+      order: course.order,
+      isPublished: course.isPublished,
+      estimatedHours: course.estimatedHours,
+      prerequisites: course.prerequisites,
+      modules: course.modules.length,
+      lessons: course.modules.reduce((total, module) => total + module.lessons.length, 0),
+      projects: course.modules.reduce((total, module) => 
+        total + module.lessons.filter(lesson => lesson.type === 'project').length, 0
+      ),
+      students: course.students || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }))
+  }
+}
+
+export default async function CoursesPage() {
+  const courses = await getCoursesWithEnrollment()
+  const publishedCourses = courses.filter(course => course.isPublished)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -43,7 +103,7 @@ export default function CoursesPage() {
                     </Badge>
                     <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                       <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
-                      {course.rating || 4.5}
+                      4.5
                     </div>
                   </div>
                   <CardTitle className="text-2xl group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -58,7 +118,7 @@ export default function CoursesPage() {
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                       <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {course.modules.length}
+                        {course.modules}
                       </div>
                       <div className="text-sm text-slate-600 dark:text-slate-300">
                         Modules
@@ -66,7 +126,7 @@ export default function CoursesPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {course.modules.reduce((total, module) => total + module.lessons.length, 0)}
+                        {course.lessons}
                       </div>
                       <div className="text-sm text-slate-600 dark:text-slate-300">
                         Lessons
@@ -74,9 +134,7 @@ export default function CoursesPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        {course.modules.reduce((total, module) => 
-                          total + module.lessons.filter(lesson => lesson.type === 'project').length, 0
-                        )}
+                        {course.projects}
                       </div>
                       <div className="text-sm text-slate-600 dark:text-slate-300">
                         Projects
@@ -92,7 +150,7 @@ export default function CoursesPage() {
                     </div>
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-2" />
-                      {(course.students || 0).toLocaleString()}
+                      {course.students.toLocaleString()}
                     </div>
                   </div>
 
@@ -136,7 +194,7 @@ export default function CoursesPage() {
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {publishedCourses.filter(course => !course.isPublished).map((course) => (
+              {courses.filter(course => !course.isPublished).map((course) => (
                 <Card key={course.id} className="opacity-60 border-0 shadow-lg">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-4">
@@ -155,7 +213,7 @@ export default function CoursesPage() {
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
                         <div className="text-2xl font-bold text-slate-400">
-                          {course.modules.length}
+                          {course.modules}
                         </div>
                         <div className="text-sm text-slate-500">
                           Modules
@@ -163,7 +221,7 @@ export default function CoursesPage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-400">
-                          {course.modules.reduce((total, module) => total + module.lessons.length, 0)}
+                          {course.lessons}
                         </div>
                         <div className="text-sm text-slate-500">
                           Lessons
@@ -171,9 +229,7 @@ export default function CoursesPage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-400">
-                          {course.modules.reduce((total, module) => 
-                            total + module.lessons.filter(lesson => lesson.type === 'project').length, 0
-                          )}
+                          {course.projects}
                         </div>
                         <div className="text-sm text-slate-500">
                           Projects

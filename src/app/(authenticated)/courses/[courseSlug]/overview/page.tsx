@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getCourseBySlug } from "@/lib/content"
@@ -18,9 +18,6 @@ import {
   Award,
   Code,
   FileText,
-  Globe,
-  Zap,
-  Lightbulb,
   ChevronLeft
 } from "lucide-react"
 
@@ -28,6 +25,63 @@ interface CourseOverviewProps {
   params: Promise<{
     courseSlug: string
   }>
+}
+
+interface CourseData {
+  id: string
+  title: string
+  description: string
+  slug: string
+  order: number
+  isPublished: boolean
+  estimatedHours: number
+  prerequisites: string[]
+  modules: Array<{
+    id: string
+    title: string
+    description: string
+    slug: string
+    order: number
+    estimatedHours: number
+    lessons: Array<{
+      id: string
+      title: string
+      description: string
+      slug: string
+      order: number
+      type: 'lesson' | 'project' | 'assignment'
+      isPublished: boolean
+    }>
+  }>
+  totalModules: number
+  totalLessons: number
+  totalProjects: number
+  students: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+async function getCourseWithEnrollment(courseSlug: string): Promise<CourseData | null> {
+  try {
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/courses/${courseSlug}`, {
+      cache: 'no-store'
+    })
+    
+    if (!response.ok) {
+      return null
+    }
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      return result.data
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Error fetching course with enrollment:', error)
+    return null
+  }
 }
 
 export default async function CourseOverview({ params }: CourseOverviewProps) {
@@ -40,20 +94,44 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
     redirect('/auth/signin?callbackUrl=' + encodeURIComponent(`/courses/${courseSlug}/overview`))
   }
   
-  const course = getCourseBySlug(courseSlug)
+  // Try to get course data from API first, fallback to static data
+  let course = await getCourseWithEnrollment(courseSlug)
   
   if (!course) {
-    notFound()
+    // Fallback to static data
+    const staticCourse = getCourseBySlug(courseSlug)
+    if (!staticCourse) {
+      notFound()
+    }
+    
+    // Transform static course to match API format
+    course = {
+      id: staticCourse.id,
+      title: staticCourse.title,
+      description: staticCourse.description,
+      slug: staticCourse.slug,
+      order: staticCourse.order,
+      isPublished: staticCourse.isPublished,
+      estimatedHours: staticCourse.estimatedHours,
+      prerequisites: staticCourse.prerequisites,
+      modules: staticCourse.modules,
+      totalModules: staticCourse.modules.length,
+      totalLessons: staticCourse.modules.reduce((acc, module) => acc + module.lessons.length, 0),
+      totalProjects: staticCourse.modules.reduce((acc, module) => 
+        acc + module.lessons.filter(lesson => lesson.type === 'project').length, 0
+      ),
+      students: staticCourse.students || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   }
 
   // Get user progress
   const progressResult = await getUserProgress()
   const userProgress = progressResult.success ? progressResult.data || [] : []
   
-  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
-  const totalProjects = course.modules.reduce((acc, module) => 
-    acc + module.lessons.filter(lesson => lesson.type === 'project').length, 0
-  )
+  const totalLessons = course.totalLessons
+  const totalProjects = course.totalProjects
   
   // Calculate real progress
   const completedLessons = getCompletedLessonsCount(userProgress, course.slug)
@@ -62,121 +140,102 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href={`/courses/${courseSlug}`}>
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Back to Course
-                </Link>
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
-              <div className="text-sm text-slate-600 dark:text-slate-300">
-                <Link 
-                  href={`/courses/${courseSlug}`}
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  {course.title}
-                </Link>
-                <span className="mx-2">/</span>
-                <span className="text-slate-900 dark:text-white font-medium">
-                  Course Overview
-                </span>
-              </div>
-            </div>
-            
-            <Button asChild size="lg" className="text-lg px-6 py-3">
-              <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].slug}`}>
-                <Play className="w-5 h-5 mr-2" />
-                Start Learning
+      <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/courses">
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Back to Courses
               </Link>
             </Button>
           </div>
+          
+          <div className="max-w-4xl">
+            <div className="flex items-center gap-3 mb-4">
+              <Badge variant="secondary">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Course
+              </Badge>
+              <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
+                4.5
+              </div>
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+              {course.title}
+            </h1>
+            
+            <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+              {course.description}
+            </p>
+
+            {/* Course Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {course.totalModules}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Modules</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {totalLessons}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Lessons</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {totalProjects}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Projects</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {course.estimatedHours}h
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Duration</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {course.students.toLocaleString()}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Students</div>
+              </div>
+            </div>
+
+            {/* Your Progress */}
+            <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Your Progress
+                </h3>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  {completedLessons}/{totalLessons} lessons completed
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3">
+                <div 
+                  className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
+                  style={{ width: `${courseProgress}%` }}
+                ></div>
+              </div>
+              <div className="text-center mt-2">
+                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {courseProgress}%
+                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">Complete</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
-            {/* Course Introduction */}
-            <section>
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <Badge variant="secondary">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Course Overview
-                  </Badge>
-                  <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                    <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
-                    {course.rating || 4.5}
-                  </div>
-                </div>
-                
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-                  {course.title}
-                </h1>
-                
-                <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
-                  {course.description}
-                </p>
-
-                {/* Course Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {course.modules.length}
-                    </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Modules</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {totalLessons}
-                    </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Lessons</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                      {totalProjects}
-                    </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Projects</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                      {course.estimatedHours}h
-                    </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Duration</div>
-                  </div>
-                </div>
-
-                {/* Your Progress */}
-                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6 mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      Your Progress
-                    </h3>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {completedLessons}/{totalLessons} lessons completed
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-3">
-                    <div 
-                      className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-                      style={{ width: `${courseProgress}%` }}
-                    ></div>
-                  </div>
-                  <div className="text-center mt-2">
-                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {courseProgress}%
-                    </span>
-                    <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">Complete</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
             {/* What You'll Learn */}
             <section>
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8">
@@ -321,7 +380,7 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-slate-600 dark:text-slate-300">
+                              <p className="text-sm text-slate-600 dark:text-slate-400">
                                 {lesson.description}
                               </p>
                             </div>
@@ -333,140 +392,87 @@ export default async function CourseOverview({ params }: CourseOverviewProps) {
                 </div>
               </div>
             </section>
-
-            {/* Prerequisites */}
-            {course.prerequisites.length > 0 && (
-              <section>
-                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Lightbulb className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                      Prerequisites
-                    </h2>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-3">
-                    {course.prerequisites.map((prereq) => (
-                      <Badge key={prereq} variant="outline" className="text-sm">
-                        {prereq}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Course Preview Card */}
-            <Card className="border-0 shadow-xl">
+            {/* Course Info Card */}
+            <Card className="border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-xl">Course Preview</CardTitle>
-                <CardDescription>
-                  Get a taste of what you&apos;ll learn
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  Course Information
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">What you&apos;ll learn:</h4>
-                  <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                      Modern JavaScript and ES6+ features
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                      React fundamentals and hooks
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                      Next.js and modern tooling
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                      Database design and APIs
-                    </li>
-                  </ul>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Duration</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    {course.estimatedHours} hours
+                  </span>
                 </div>
-                
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <Button asChild className="w-full">
-                    <Link href={`/courses/${course.slug}/${course.modules[0].slug}/${course.modules[0].lessons[0].slug}`}>
-                      <Play className="w-4 h-4 mr-2" />
-                      Start Learning
-                    </Link>
-                  </Button>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Modules</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    {course.totalModules}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Lessons</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    {totalLessons}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Projects</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    {totalProjects}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Students</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    {course.students.toLocaleString()}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">4.5</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">(Excellent)</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Course Features */}
-            <Card className="border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-xl">Course Features</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                  <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Self-Paced Learning</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Learn at your own speed</p>
+            {/* Prerequisites */}
+            {course.prerequisites.length > 0 && (
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5" />
+                    Prerequisites
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {course.prerequisites.map((prereq) => (
+                      <div key={prereq} className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{prereq}</span>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Code className="w-5 h-5 text-blue-500" />
-                  <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Hands-On Projects</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Build real applications</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-green-500" />
-                  <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Lifetime Access</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Access content forever</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-purple-500" />
-                  <div>
-                    <h4 className="font-medium text-slate-900 dark:text-white">Certificate</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Earn completion certificate</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Instructor Info */}
-            <Card className="border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-xl">Your Instructor</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">V</span>
-                  </div>
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Project Vibe It Team</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    Professional developers and educators
-                  </p>
-                </div>
-                
-                <div className="text-sm text-slate-600 dark:text-slate-300">
-                  <p className="mb-2">
-                    Our team of experienced developers and educators are passionate about helping you succeed in your coding journey.
-                  </p>
-                  <p>
-                    We believe in practical, hands-on learning that prepares you for real-world development challenges.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* CTA Button */}
+            <Button asChild className="w-full" size="lg">
+              <Link href={`/courses/${course.slug}`}>
+                <Play className="w-4 h-4 mr-2" />
+                Start Learning
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
