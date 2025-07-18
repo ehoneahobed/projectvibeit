@@ -1,0 +1,59 @@
+{
+  "id": "course-slug-module-slug-lesson-slug",
+  "title": "Lesson Title",
+  "description": "Test your understanding of the key concepts from this lesson.",
+  "questions": [
+    {
+      "id": "question-0",
+      "question": "What is the main concept covered in this lesson?",
+      "options": [
+        {
+          "id": "question-0-option-0",
+          "text": "Option A",
+          "isCorrect": false
+        },
+        {
+          "id": "question-0-option-1",
+          "text": "Option B (Correct Answer)",
+          "isCorrect": true
+        },
+        {
+          "id": "question-0-option-2",
+          "text": "Option C",
+          "isCorrect": false
+        },
+        {
+          "id": "question-0-option-3",
+          "text": "Option D",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": "question-1",
+      "question": "Which of the following is NOT true about this topic?",
+      "options": [
+        {
+          "id": "question-1-option-0",
+          "text": "Fact A",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-1",
+          "text": "Fact B",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-2",
+          "text": "Fact C",
+          "isCorrect": false
+        },
+        {
+          "id": "question-1-option-3",
+          "text": "This is the incorrect statement",
+          "isCorrect": true
+        }
+      ]
+    }
+  ]
+} 

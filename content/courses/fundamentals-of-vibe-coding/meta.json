@@ -1,0 +1,250 @@
+{
+  "title": "Fundamentals of Vibe Coding",
+  "description": "Master the art of AI-assisted development and build modern web applications with confidence",
+  "slug": "fundamentals-of-vibe-coding",
+  "published": true,
+  "modules": [
+    {
+      "title": "Introduction to Vibe Coding",
+      "slug": "introduction-to-vibe-coding",
+      "description": "Understanding the philosophy and approach of Vibe Coding",
+      "lessons": [
+        {
+          "title": "What is Vibe Coding?",
+          "slug": "what-is-vibe-coding",
+          "description": "Introduction to the Vibe Coding philosophy and methodology",
+          "duration": "15 minutes"
+        },
+        {
+          "title": "The Evolution of Development",
+          "slug": "evolution-of-development",
+          "description": "How AI is transforming the software development landscape",
+          "duration": "20 minutes"
+        },
+        {
+          "title": "The Vibe Coding Mindset",
+          "slug": "vibe-coding-mindset",
+          "description": "Developing the right mindset for AI-assisted development",
+          "duration": "25 minutes"
+        }
+      ]
+    },
+    {
+      "title": "Essential Vibe Coding Tools",
+      "slug": "essential-vibe-coding-tools",
+      "description": "Master the tools that power modern AI-assisted development",
+      "lessons": [
+        {
+          "title": "AI Development Platforms",
+          "slug": "ai-development-platforms",
+          "description": "Explore platforms like GitHub Copilot, Cursor, and Replit",
+          "duration": "30 minutes"
+        },
+        {
+          "title": "AI Assistants for Development",
+          "slug": "ai-assistants-for-development",
+          "description": "Learn about specialized AI tools that enhance your development workflow",
+          "duration": "25 minutes"
+        },
+        {
+          "title": "Design and Prototyping Tools",
+          "slug": "design-and-prototyping-tools",
+          "description": "AI-powered design tools and rapid prototyping",
+          "duration": "20 minutes"
+        },
+        {
+          "title": "Tool Selection Framework",
+          "slug": "tool-selection-framework",
+          "description": "How to choose the right tools for your projects",
+          "duration": "15 minutes"
+        }
+      ]
+    },
+    {
+      "title": "Core Technical Concepts",
+      "slug": "core-technical-concepts",
+      "description": "Essential technical knowledge for modern web development",
+      "lessons": [
+        {
+          "title": "Web Development Fundamentals",
+          "slug": "web-development-fundamentals",
+          "description": "Understanding frontend, backend, and full-stack development",
+          "duration": "30 minutes"
+        },
+        {
+          "title": "Modern Architecture Patterns",
+          "slug": "modern-architecture-patterns",
+          "description": "Microservices, APIs, and scalable system design",
+          "duration": "35 minutes"
+        },
+        {
+          "title": "Tech Stack Decisions",
+          "slug": "tech-stack-decisions",
+          "description": "Choosing the right technologies for your projects",
+          "duration": "25 minutes"
+        },
+        {
+          "title": "Development Workflow",
+          "slug": "development-workflow",
+          "description": "Git, testing, and deployment best practices",
+          "duration": "30 minutes"
+        }
+      ]
+    },
+    {
+      "title": "Business and Product Concepts",
+      "slug": "business-and-product-concepts",
+      "description": "Understanding product development and business fundamentals",
+      "lessons": [
+        {
+          "title": "Product Development Lifecycle",
+          "slug": "product-development-lifecycle",
+          "description": "From idea to launch: the complete product journey",
+          "duration": "40 minutes"
+        },
+        {
+          "title": "Agile Development with AI",
+          "slug": "agile-development-with-ai",
+          "description": "How AI enhances agile methodologies and project management",
+          "duration": "35 minutes"
+        },
+        {
+          "title": "Business Models for SaaS",
+          "slug": "business-models-for-saas",
+          "description": "Understanding subscription models, pricing, and growth metrics",
+          "duration": "30 minutes"
+        },
+        {
+          "title": "Project: Create a Product Specification",
+          "slug": "project-create-product-specification",
+          "description": "Apply your knowledge to create a comprehensive product spec",
+          "duration": "45 minutes"
+        }
+      ]
+    },
+    {
+      "title": "Advanced Prompting and AI Collaboration",
+      "slug": "advanced-prompting-and-ai-collaboration",
+      "description": "Master the art of communicating with AI and orchestrating complex workflows",
+      "lessons": [
+        {
+          "title": "The Art of Prompting",
+          "slug": "art-of-prompting",
+          "description": "Crafting effective instructions and managing AI conversations",
+          "duration": "35 minutes"
+        },
+        {
+          "title": "Mega Prompts for Development",
+          "slug": "mega-prompts-for-development",
+          "description": "Using comprehensive prompts for complex development tasks",
+          "duration": "40 minutes"
+        },
+        {
+          "title": "Multi-Agent Workflows",
+          "slug": "multi-agent-workflows",
+          "description": "Orchestrating multiple AI models for sophisticated projects",
+          "duration": "45 minutes"
+        },
+        {
+          "title": "Advanced Techniques",
+          "slug": "advanced-techniques",
+          "description": "Code architecture, performance optimization, and scaling strategies",
+          "duration": "50 minutes"
+        }
+      ]
+    },
+    {
+      "title": "Project Portfolio Development",
+      "slug": "project-portfolio-development",
+      "description": "Apply all your learning by building real-world projects with AI assistance",
+      "lessons": [
+        {
+          "title": "Project 1: Static Website",
+          "slug": "project-1-static-website",
+          "description": "Build a professional business website with responsive design and SEO optimization",
+          "duration": "1 week"
+        },
+        {
+          "title": "Project 2: Interactive Web App",
+          "slug": "project-2-interactive-web-app",
+          "description": "Create a productivity tool with user authentication and data persistence",
+          "duration": "1 week"
+        },
+        {
+          "title": "Project 3: Micro-SaaS",
+          "slug": "project-3-micro-saas",
+          "description": "Build a simple paid service with payment integration and user management",
+          "duration": "1 week"
+        },
+        {
+          "title": "Project 4: Full-Stack SaaS",
+          "slug": "project-4-full-stack-saas",
+          "description": "Develop a complete SaaS application with multi-tenant architecture",
+          "duration": "1 week"
+        }
+      ]
+    },
+    {
+      "title": "Deployment and Going Live",
+      "slug": "deployment-and-going-live",
+      "description": "Get your applications live and keep them running smoothly in production",
+      "lessons": [
+        {
+          "title": "Hosting Options",
+          "slug": "hosting-options",
+          "description": "Choose the right hosting platform for your application type",
+          "duration": "30 minutes"
+        },
+        {
+          "title": "Domain and SSL",
+          "slug": "domain-and-ssl",
+          "description": "Set up domains, DNS, SSL certificates, and CDN for your applications",
+          "duration": "25 minutes"
+        },
+        {
+          "title": "Monitoring and Analytics",
+          "slug": "monitoring-and-analytics",
+          "description": "Track performance, user behavior, and application health",
+          "duration": "35 minutes"
+        },
+        {
+          "title": "Launch Strategy",
+          "slug": "launch-strategy",
+          "description": "Plan and execute a successful application launch",
+          "duration": "40 minutes"
+        }
+      ]
+    },
+    {
+      "title": "Scaling and Growth",
+      "slug": "scaling-and-growth",
+      "description": "Scale your applications and grow your business with AI assistance",
+      "lessons": [
+        {
+          "title": "Performance Optimization",
+          "slug": "performance-optimization",
+          "description": "Optimize code, databases, and infrastructure for scale",
+          "duration": "45 minutes"
+        },
+        {
+          "title": "Feature Development",
+          "slug": "feature-development",
+          "description": "Build features users want with feedback integration and A/B testing",
+          "duration": "40 minutes"
+        },
+        {
+          "title": "Business Growth",
+          "slug": "business-growth",
+          "description": "Customer acquisition, retention, pricing, and team building",
+          "duration": "50 minutes"
+        },
+        {
+          "title": "Final Project: Growth Strategy",
+          "slug": "final-project-growth-strategy",
+          "description": "Present your SaaS application with comprehensive growth strategy",
+          "duration": "1 week"
+        }
+      ]
+    }
+  ]
+} 

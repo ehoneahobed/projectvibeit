@@ -1,5 +1,15 @@
 import mongoose, { Schema, Document } from "mongoose"
 
+export interface IProgress {
+  courseId: string
+  moduleId: string
+  lessonId: string
+  completedLessons: string[]
+  completedProjects: string[]
+  totalProgress: number
+  completedAt?: Date
+}
+
 export interface IUser extends Document {
   id: string
   name?: string
@@ -7,6 +17,9 @@ export interface IUser extends Document {
   emailVerified?: Date
   password?: string
   image?: string
+  githubUsername?: string
+  role: "student" | "contributor" | "admin"
+  progress: IProgress[]
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   planName: string
@@ -16,6 +29,16 @@ export interface IUser extends Document {
   archivedAt?: Date
 }
 
+const ProgressSchema = new Schema<IProgress>({
+  courseId: { type: String, required: true },
+  moduleId: { type: String, required: true },
+  lessonId: { type: String, required: true },
+  completedLessons: [{ type: String }],
+  completedProjects: [{ type: String }],
+  totalProgress: { type: Number, default: 0 },
+  completedAt: Date,
+})
+
 const UserSchema = new Schema<IUser>(
   {
     name: String,
@@ -23,6 +46,13 @@ const UserSchema = new Schema<IUser>(
     emailVerified: Date,
     password: String,
     image: String,
+    githubUsername: String,
+    role: { 
+      type: String, 
+      enum: ["student", "contributor", "admin"], 
+      default: "student" 
+    },
+    progress: [ProgressSchema],
     stripeCustomerId: { type: String, unique: true, sparse: true },
     stripeSubscriptionId: { type: String, unique: true, sparse: true },
     planName: { type: String, default: "free" },
@@ -35,5 +65,7 @@ const UserSchema = new Schema<IUser>(
 )
 
 // Indexes are automatically created by unique: true in field definitions
+UserSchema.index({ role: 1 })
+UserSchema.index({ githubUsername: 1 })
 
 export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema)

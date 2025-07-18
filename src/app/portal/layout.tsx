@@ -2,19 +2,21 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Bell,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Package2,
+  BookOpen,
   PanelLeft,
   Settings,
   User as UserIcon,
+  AlertTriangle,
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -41,7 +43,7 @@ import {
 } from "@/components/ui/tooltip"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-import { menuItems } from "@/lib/menu-data"
+import { getFilteredMenuItems } from "@/lib/menu-data"
 import { cn } from "@/lib/utils"
 
 export default function PortalLayout({
@@ -49,10 +51,13 @@ export default function PortalLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const user = session?.user
   const pathname = usePathname()
+  const router = useRouter()
   const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const getInitials = (name?: string | null) => {
     if (!name) return ""
@@ -63,7 +68,8 @@ export default function PortalLayout({
   }
 
   const getPageTitle = () => {
-    for (const item of menuItems) {
+    const filteredMenuItems = getFilteredMenuItems(userRole)
+    for (const item of filteredMenuItems) {
       if (item.href === pathname) {
         return item.label
       }
@@ -76,6 +82,78 @@ export default function PortalLayout({
       }
     }
     return "Dashboard"
+  }
+
+  // Check user role and authorization
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (status === 'loading') return
+      
+      if (!session?.user) {
+        router.push('/auth/signin?callbackUrl=/portal')
+        return
+      }
+
+      try {
+        const response = await fetch('/api/auth/check-role')
+        const data = await response.json()
+        
+        if (data.success) {
+          setUserRole(data.role)
+          
+          // Check if user has admin or contributor role
+          if (!['admin', 'contributor'].includes(data.role)) {
+            router.push('/dashboard?error=unauthorized')
+            return
+          }
+        } else {
+          router.push('/dashboard?error=unauthorized')
+          return
+        }
+      } catch (error) {
+        console.error('Error checking user role:', error)
+        router.push('/dashboard?error=unauthorized')
+        return
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [session, status, router])
+
+  // Show loading state
+  if (isLoading || status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Checking authorization...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show unauthorized message
+  if (!userRole || !['admin', 'contributor'].includes(userRole)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            Access Denied
+          </h1>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">
+            You don&apos;t have permission to access the admin portal. Only administrators and contributors can access this area.
+          </p>
+          <Button asChild>
+            <Link href="/dashboard">
+              Go to Dashboard
+            </Link>
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -92,15 +170,15 @@ export default function PortalLayout({
               href="/portal"
               className="flex items-center gap-2 font-semibold"
             >
-              <Package2 className="h-6 w-6" />
+              <BookOpen className="h-6 w-6" />
               <span className={cn(isCollapsed && "hidden")}>
-                Auth Boilerplate
+                Project Vibe It - Admin
               </span>
             </Link>
           </div>
           <nav className="flex-1 overflow-auto py-2">
             <ul className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {menuItems.map((item) => (
+              {getFilteredMenuItems(userRole).map((item) => (
                 <li key={item.label}>
                   {item.subMenu ? (
                     <Collapsible>
@@ -242,10 +320,10 @@ export default function PortalLayout({
                     href="#"
                     className="group bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold md:text-base"
                   >
-                    <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-                    <span className="sr-only">Auth Boilerplate</span>
+                    <BookOpen className="h-5 w-5 transition-all group-hover:scale-110" />
+                    <span className="sr-only">Vibe It Admin</span>
                   </Link>
-                  {menuItems.map((item) => (
+                  {getFilteredMenuItems(userRole).map((item) => (
                     <React.Fragment key={item.label}>
                       {item.subMenu ? (
                         <Collapsible className="grid gap-4">
@@ -303,31 +381,13 @@ export default function PortalLayout({
                 <Button variant="outline" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
                   <span className="sr-only">Notifications</span>
-                  <span className="border-background absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 bg-red-500" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <div className="flex flex-col">
-                    <p className="font-semibold">New user registered</p>
-                    <p className="text-muted-foreground text-xs">
-                      A new user has signed up.
-                    </p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <div className="flex flex-col">
-                    <p className="font-semibold">Password changed</p>
-                    <p className="text-muted-foreground text-xs">
-                      Your password was recently changed.
-                    </p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-primary text-center">
-                  View all notifications
+                <DropdownMenuItem className="text-muted-foreground text-center">
+                  No new notifications
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

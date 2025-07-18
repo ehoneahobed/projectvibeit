@@ -1,0 +1,76 @@
+{
+  "name": "VibeIt - Master AI-Assisted Coding",
+  "short_name": "VibeIt",
+  "description": "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0C6075",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Learning",
+      "short_name": "Learn",
+      "description": "Start your AI-assisted coding journey",
+      "url": "/courses",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Fundamentals Course",
+      "short_name": "Fundamentals",
+      "description": "Access the fundamentals of vibe coding course",
+      "url": "/courses/fundamentals-of-vibe-coding",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "VibeIt Learning Platform - Desktop View"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "VibeIt Learning Platform - Mobile View"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+} 

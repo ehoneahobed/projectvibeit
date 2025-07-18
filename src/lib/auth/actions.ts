@@ -4,26 +4,6 @@ import type { ProviderId } from "next-auth/providers"
 import { signIn } from "next-auth/react"
 import { toast } from "sonner"
 
-import { auth } from "@/lib/auth/auth"
-
-/**
- * Get the current user
- * @returns The current user
- */
-export async function getCurrentUser() {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      return null
-    }
-
-    return session.user
-  } catch (error) {
-    console.error("Error getting current user:", error)
-    return null
-  }
-}
-
 export async function signInWithProvider(
   provider: ProviderId,
   email?: string,

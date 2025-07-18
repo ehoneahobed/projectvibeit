@@ -4,7 +4,11 @@ import { auth } from "@/lib/auth/auth"
 import { getSafeRedirectUrl } from "@/lib/redirect"
 
 const ROUTE_CONFIG = {
-  protected: [{ exact: false, path: "/portal" }],
+  protected: [
+    { exact: false, path: "/portal" },
+    { exact: false, path: "/dashboard" },
+    { exact: false, path: "/courses" },
+  ],
   auth: [
     { exact: true, path: "/auth/signin" },
     { exact: true, path: "/auth/signup" },

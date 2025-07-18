@@ -93,7 +93,7 @@ export function CredentialSignInForm({
                 <FormLabel>Password</FormLabel>
                 <Link
                   href="/auth/forgot-password"
-                  className="ml-auto text-xs text-red-500 hover:underline"
+                  className="ml-auto text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   Forgot your password?
                 </Link>

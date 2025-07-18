@@ -1,0 +1,415 @@
+---
+title: "Domain and SSL"
+description: "Set up domains, DNS, SSL certificates, and CDN for your applications"
+duration: "25 minutes"
+---
+
+# Domain and SSL
+
+Once your application is hosted, you need a memorable address for it and a way to ensure it's secure. This lesson covers everything you need to know about giving your application a professional web address and protecting your users' data.
+
+## Domain Registration: Choosing and Purchasing Domains
+
+**What it is:** A domain name is your website's easy-to-remember address on the internet (e.g., yourbusiness.com). You "register" it, which means you essentially rent it for a period (usually a year or more).
+
+**Analogy:** This is like getting a unique street address for your restaurant that's easy for customers to find and remember, instead of just a complex set of GPS coordinates.
+
+### Popular Domain Registrars
+
+#### GoDaddy
+**Best for:** Beginners, comprehensive services
+**Key Features:**
+- User-friendly interface
+- Domain + hosting bundles
+- Website builder included
+- 24/7 customer support
+- Competitive pricing
+
+**AI Collaboration Tips:**
+- Use AI to help choose domain names
+- Ask AI for domain availability checking
+- Get AI assistance with domain transfer
+
+#### Namecheap
+**Best for:** Privacy-conscious users, competitive pricing
+**Key Features:**
+- Free WHOIS privacy protection
+- Competitive domain prices
+- Good customer support
+- Easy domain management
+- Security features included
+
+**AI Collaboration Tips:**
+- Use AI to optimize domain search
+- Ask AI for privacy protection setup
+- Get AI assistance with DNS configuration
+
+#### Google Domains
+**Best for:** Google ecosystem users, simplicity
+**Key Features:**
+- Clean, simple interface
+- Integration with Google services
+- Free privacy protection
+- Easy DNS management
+- Reliable service
+
+**AI Collaboration Tips:**
+- Use AI to help with Google Domains setup
+- Ask AI for DNS record configuration
+- Get AI assistance with Google Workspace integration
+
+### Domain Name Best Practices
+
+#### 1. Choose the Right Extension
+- **.com** - Most recognized and trusted
+- **.org** - Good for organizations and nonprofits
+- **.net** - Alternative to .com
+- **.io** - Popular for tech startups
+- **.co** - Short alternative to .com
+- **Country codes** (.uk, .ca, .au) - For local markets
+
+#### 2. Keep It Simple and Memorable
+- Short and easy to spell
+- Avoid hyphens and numbers
+- Make it brandable
+- Consider pronunciation
+
+#### 3. Research and Availability
+- Check trademark conflicts
+- Verify social media availability
+- Consider future expansion
+- Check for negative associations
+
+### AI-Assisted Domain Selection
+
+**Example Prompt:**
+```
+"I'm starting a [business type] called [business name].
+My target audience is [description].
+I want a domain that's [requirements].
+
+Please suggest:
+- 10 domain name options
+- Available extensions to consider
+- Alternative spellings or variations
+- Potential trademark issues to check"
+```
+
+## DNS Configuration: Connecting Domains to Hosting
+
+**What it is:** DNS (Domain Name System) is like the internet's phone book. When someone types your domain name into their browser, DNS translates that name into the numerical IP address of your hosting server, telling the browser where to find your website.
+
+**Analogy:** Once you have your restaurant's street address, you need to tell the postal service (DNS) that this address now points to your specific building (hosting server), so mail (internet traffic) can be delivered correctly.
+
+### Common DNS Record Types
+
+#### A Record
+**Purpose:** Points your domain to an IP address
+**Example:** `yourdomain.com → 192.168.1.1`
+**Use Case:** Connecting domain to hosting server
+
+#### CNAME Record
+**Purpose:** Creates an alias for your domain
+**Example:** `www.yourdomain.com → yourdomain.com`
+**Use Case:** Redirecting www to non-www (or vice versa)
+
+#### MX Record
+**Purpose:** Specifies mail servers for your domain
+**Example:** `yourdomain.com → mail.yourdomain.com`
+**Use Case:** Setting up email hosting
+
+#### TXT Record
+**Purpose:** Stores text information
+**Example:** `yourdomain.com → "v=spf1 include:_spf.google.com ~all"`
+**Use Case:** Email authentication, domain verification
+
+### DNS Configuration Process
+
+#### 1. Get Nameservers from Your Hosting Provider
+- Log into your hosting account
+- Find DNS or nameserver settings
+- Copy the provided nameservers
+
+#### 2. Update Nameservers at Domain Registrar
+- Log into your domain registrar
+- Find DNS or nameserver settings
+- Replace default nameservers with hosting provider's nameservers
+
+#### 3. Wait for Propagation
+- DNS changes can take 24-48 hours to propagate globally
+- Use online tools to check propagation status
+- Test your domain to ensure it's working
+
+### AI-Assisted DNS Configuration
+
+**Example Prompt:**
+```
+"I'm setting up DNS for my domain [domain.com] hosted on [platform].
+My hosting provider gave me these nameservers: [list].
+
+Please help me:
+- Configure the correct DNS records
+- Set up email hosting
+- Create www redirect
+- Verify the configuration is correct"
+```
+
+## SSL Certificates: Securing Your Applications
+
+**What it is:** SSL (Secure Sockets Layer) creates a secure, encrypted connection between a user's browser and your website. You'll see "https://" in the address bar and a padlock icon. It protects sensitive information like passwords and credit card details.
+
+**Analogy:** This is like having a secure, locked tunnel between your customer and your restaurant's cash register. Any information exchanged inside that tunnel is safe from eavesdroppers.
+
+### Types of SSL Certificates
+
+#### Domain Validated (DV)
+**Best for:** Personal websites, blogs
+**Validation:** Basic domain ownership verification
+**Cost:** Often free
+**Features:** Basic encryption, padlock icon
+
+#### Organization Validated (OV)
+**Best for:** Business websites
+**Validation:** Organization identity verification
+**Cost:** $50-200/year
+**Features:** Organization name in certificate, higher trust
+
+#### Extended Validation (EV)
+**Best for:** E-commerce, financial sites
+**Validation:** Comprehensive business verification
+**Cost:** $200-500/year
+**Features:** Green address bar, highest trust level
+
+#### Wildcard SSL
+**Best for:** Multiple subdomains
+**Validation:** Varies by type
+**Cost:** $100-500/year
+**Features:** Covers all subdomains (*.yourdomain.com)
+
+### Free SSL Options
+
+#### Let's Encrypt
+**Best for:** Most websites
+**Features:**
+- Completely free
+- Automated renewal
+- 90-day certificates
+- Wide hosting provider support
+
+#### Cloudflare SSL
+**Best for:** Cloudflare users
+**Features:**
+- Free with Cloudflare account
+- Flexible SSL modes
+- Global CDN included
+- Easy setup
+
+### SSL Setup Process
+
+#### 1. Choose Your SSL Provider
+- Check if your hosting provider offers free SSL
+- Consider Let's Encrypt for free certificates
+- Evaluate paid options for business needs
+
+#### 2. Install SSL Certificate
+- Most hosting providers offer one-click SSL installation
+- For manual installation, follow provider-specific instructions
+- Verify certificate installation
+
+#### 3. Configure HTTPS Redirect
+- Redirect all HTTP traffic to HTTPS
+- Update internal links to use HTTPS
+- Test all pages and functionality
+
+#### 4. Monitor and Renew
+- Set up automatic renewal for free certificates
+- Monitor certificate expiration dates
+- Test SSL configuration regularly
+
+### AI-Assisted SSL Setup
+
+**Example Prompt:**
+```
+"I need to set up SSL for my [website type] on [hosting platform].
+My domain is [domain.com].
+
+Please help me:
+- Choose the right SSL certificate type
+- Set up HTTPS redirect
+- Configure security headers
+- Test the SSL configuration"
+```
+
+## CDN Setup: Global Content Delivery
+
+**What it is:** A CDN (Content Delivery Network) is a network of servers located around the world. It stores copies of your website's static content (images, videos, CSS files) closer to your users. When a user requests your site, the content is delivered from the nearest CDN server, making your site load much faster globally.
+
+**Analogy:** Instead of having all your restaurant's ingredients stored in one central warehouse, you have smaller, local pantries (CDN servers) in different cities. When a customer orders, the ingredients come from the closest pantry, speeding up delivery.
+
+### Popular CDN Providers
+
+#### Cloudflare
+**Best for:** Most websites, comprehensive features
+**Key Features:**
+- Free tier available
+- Global network
+- DDoS protection
+- SSL certificates
+- Easy setup
+
+**AI Collaboration Tips:**
+- Use AI to optimize Cloudflare settings
+- Ask AI for security rule configuration
+- Get AI assistance with performance optimization
+
+#### AWS CloudFront
+**Best for:** AWS users, high-performance requirements
+**Key Features:**
+- Global edge locations
+- Integration with AWS services
+- Advanced caching options
+- Real-time metrics
+- Custom error pages
+
+**AI Collaboration Tips:**
+- Use AI to configure CloudFront distributions
+- Ask AI for caching strategy optimization
+- Get AI assistance with cost optimization
+
+#### Google Cloud CDN
+**Best for:** Google Cloud users
+**Key Features:**
+- Global network
+- Integration with Google Cloud services
+- Advanced caching
+- Load balancing
+- Security features
+
+**AI Collaboration Tips:**
+- Use AI to optimize Google Cloud CDN
+- Ask AI for integration strategies
+- Get AI assistance with configuration
+
+### CDN Setup Process
+
+#### 1. Choose Your CDN Provider
+- Consider your hosting platform integration
+- Evaluate free vs. paid options
+- Check global coverage and performance
+
+#### 2. Configure CDN Settings
+- Set up origin server (your hosting)
+- Configure caching rules
+- Set up custom domains
+- Enable HTTPS
+
+#### 3. Update DNS Records
+- Point your domain to CDN servers
+- Configure CNAME records
+- Test CDN functionality
+
+#### 4. Optimize Performance
+- Configure cache headers
+- Optimize image delivery
+- Set up compression
+- Monitor performance metrics
+
+### AI-Assisted CDN Setup
+
+**Example Prompt:**
+```
+"I want to set up a CDN for my [website type] hosted on [platform].
+My domain is [domain.com].
+
+Please help me:
+- Choose the best CDN provider
+- Configure caching rules
+- Set up DNS records
+- Optimize for performance"
+```
+
+## Complete Setup Checklist
+
+### Domain Setup
+- [ ] Register domain name
+- [ ] Configure nameservers
+- [ ] Set up email hosting (if needed)
+- [ ] Create www redirect
+- [ ] Test domain resolution
+
+### SSL Setup
+- [ ] Choose SSL certificate type
+- [ ] Install SSL certificate
+- [ ] Configure HTTPS redirect
+- [ ] Update internal links
+- [ ] Test SSL configuration
+
+### CDN Setup
+- [ ] Choose CDN provider
+- [ ] Configure CDN settings
+- [ ] Update DNS records
+- [ ] Optimize caching rules
+- [ ] Test CDN performance
+
+### Security and Performance
+- [ ] Enable security headers
+- [ ] Configure CSP (Content Security Policy)
+- [ ] Set up monitoring
+- [ ] Test mobile performance
+- [ ] Verify SEO requirements
+
+## AI Collaboration Strategies
+
+### 1. Domain Planning
+- Use AI to brainstorm domain names
+- Ask AI for trademark research
+- Get AI assistance with domain strategy
+
+### 2. Technical Configuration
+- Use AI to help with DNS setup
+- Ask AI for SSL configuration
+- Get AI assistance with CDN optimization
+
+### 3. Troubleshooting
+- Use AI to diagnose DNS issues
+- Ask AI for SSL troubleshooting
+- Get AI assistance with performance problems
+
+## Practical Exercise: Set Up Your Domain
+
+For this exercise, set up a complete domain and SSL configuration for one of your projects:
+
+1. **Register a domain name** (or use a free subdomain)
+2. **Configure DNS settings** to point to your hosting
+3. **Set up SSL certificate** for HTTPS
+4. **Configure CDN** for better performance
+5. **Test everything** to ensure it's working
+
+**AI Collaboration:**
+```
+"Help me set up my complete domain configuration:
+- Domain: [domain.com]
+- Hosting: [platform]
+- Requirements: [list]
+
+Please provide:
+- Step-by-step setup instructions
+- DNS configuration details
+- SSL setup process
+- CDN configuration
+- Testing checklist"
+```
+
+## Key Takeaways
+
+1. **Choose the right domain** - Make it memorable and brandable
+2. **Configure DNS properly** - Ensure your domain points to your hosting
+3. **Always use SSL** - Protect your users and improve SEO
+4. **Consider CDN for performance** - Speed up your site globally
+5. **Use AI for optimization** - Leverage AI to make informed decisions
+
+## Next Steps
+
+In the next lesson, we'll explore "Monitoring and Analytics" - how to track your application's performance and understand how users interact with it.
+
+Remember: A professional domain and secure connection are essential for building trust with your users. Take the time to set everything up correctly, and don't hesitate to use AI to help you optimize your configuration! 
