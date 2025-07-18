@@ -150,7 +150,7 @@ projectvibeit/
 - **Module**: Course sections containing lessons
 - **Lesson**: Individual learning units with content
 - **ProjectSubmission**: Student project submissions
-- **Discussion**: Community discussions per lesson
+- **Discussion**: Course-based Q&A discussions with community support
 
 ## 👥 User Roles & Permissions
 
@@ -161,6 +161,24 @@ The platform implements a three-tier role system to support both learners and co
 - **Admin**: Full platform access, user management, analytics, system settings
 
 See [Roles & Permissions Guide](./docs/roles-and-permissions.md) for detailed information.
+
+## 💬 Discussion System
+
+The platform includes a comprehensive discussion system that enables collaborative learning:
+
+### For Students
+- **Ask Questions**: Create discussions on any lesson to get help
+- **Community Support**: Reply to other students' questions
+- **Track Progress**: See resolved discussions and learning history
+- **Easy Navigation**: Discussions are integrated into lesson pages
+
+### For Admins & Contributors
+- **Moderation Tools**: Manage all discussions across courses
+- **Analytics Dashboard**: View discussion statistics and engagement
+- **Search & Filter**: Find specific discussions by content or status
+- **Resolve Discussions**: Mark questions as resolved when answered
+
+See [Discussion System Guide](./docs/discussion-system.md) for detailed information.
 
 ## 🎨 Design System
 

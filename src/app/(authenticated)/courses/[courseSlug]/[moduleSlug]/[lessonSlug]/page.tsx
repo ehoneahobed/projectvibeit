@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MDXRenderer } from "@/components/mdx-renderer"
-import { LessonCompletion } from "@/components/lesson-completion"
-import { FloatingCompletionButton } from "@/components/floating-completion-button"
+import { LessonPageClient } from "@/components/lesson-page-client"
 import { 
   getLessonContent, 
   getLessonNavigation,
@@ -29,7 +28,6 @@ import {
   CheckCircle,
   Circle,
   Lock,
-  MessageSquare,
   Github,
   Globe,
   Video,
@@ -196,10 +194,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="hover:bg-accent">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Ask Question
-              </Button>
+              {/* Ask Question button moved to client component */}
             </div>
           </div>
         </div>
@@ -341,28 +336,28 @@ export default async function LessonPage({ params }: LessonPageProps) {
               </Card>
             )}
 
-            {/* Lesson Completion - Moved to bottom */}
-            <div className="mt-8">
-              <LessonCompletion
-                courseSlug={courseSlug}
-                moduleSlug={moduleSlug}
-                lessonId={current.id}
-                lessonTitle={current.title}
-                isCompleted={isCompleted}
-                previousLesson={previous ? { 
-                  slug: previous.slug, 
-                  title: previous.title,
-                  moduleSlug: (previous as NavigationLesson).moduleSlug || moduleSlug
-                } : null}
-                nextLesson={next ? { 
-                  slug: next.slug, 
-                  title: next.title,
-                  moduleSlug: (next as NavigationLesson).moduleSlug || moduleSlug
-                } : null}
-                moduleTitle={module.title}
-                courseTitle={course.title}
-              />
-            </div>
+            {/* Interactive Components - Client Wrapper */}
+            <LessonPageClient
+              courseSlug={courseSlug}
+              moduleSlug={moduleSlug}
+              lessonSlug={lessonSlug}
+              lessonId={`${courseSlug}/${moduleSlug}/${lessonSlug}`}
+              lessonTitle={current.title}
+              isCompleted={isCompleted}
+              previousLesson={previous ? { 
+                slug: previous.slug, 
+                title: previous.title,
+                moduleSlug: (previous as NavigationLesson).moduleSlug || moduleSlug
+              } : null}
+              nextLesson={next ? { 
+                slug: next.slug, 
+                title: next.title,
+                moduleSlug: (next as NavigationLesson).moduleSlug || moduleSlug
+              } : null}
+              moduleTitle={module.title}
+              courseTitle={course.title}
+              showAskQuestionButton={true}
+            />
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8">
@@ -481,18 +476,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
         </div>
       </div>
 
-      {/* Floating Action Button for Quick Completion */}
-      <FloatingCompletionButton
-        courseSlug={courseSlug}
-        moduleSlug={moduleSlug}
-        lessonId={current.id}
-        isCompleted={isCompleted}
-        nextLesson={next ? { 
-          slug: next.slug, 
-          title: next.title,
-          moduleSlug: (next as NavigationLesson).moduleSlug || moduleSlug
-        } : null}
-      />
+
     </div>
   )
 } 
