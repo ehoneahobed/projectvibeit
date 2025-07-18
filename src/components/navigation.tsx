@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import { Progress } from "@/components/ui/progress"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { useEffect, useState, useCallback, useRef } from "react"
 
 interface UserProgress {
@@ -127,16 +128,16 @@ export function Navigation() {
   }
 
   return (
-    <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+    <nav className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#0C6075] to-[#0A4F61] rounded-lg flex items-center justify-center shadow-md">
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900 dark:text-white">
+              <span className="text-xl font-bold text-[#0C6075] dark:text-[#0C6075]">
                 Project Vibe It
               </span>
             </Link>
@@ -146,19 +147,19 @@ export function Navigation() {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/courses" 
-              className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="text-[#0C6075] dark:text-[#0C6075] hover:text-[#0A4F61] dark:hover:text-[#0A4F61] transition-colors font-medium"
             >
               Courses
             </Link>
             <Link 
               href="/dashboard" 
-              className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="text-[#0C6075] dark:text-[#0C6075] hover:text-[#0A4F61] dark:hover:text-[#0A4F61] transition-colors font-medium"
             >
               Dashboard
             </Link>
             <Link 
               href="/community" 
-              className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="text-[#0C6075] dark:text-[#0C6075] hover:text-[#0A4F61] dark:hover:text-[#0A4F61] transition-colors font-medium"
             >
               Community
             </Link>
@@ -166,18 +167,21 @@ export function Navigation() {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* Quick Progress Indicator */}
-            <div className="hidden lg:flex items-center space-x-3 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-lg">
+            <div className="hidden lg:flex items-center space-x-3 bg-[#0C6075]/10 dark:bg-[#0C6075]/20 px-4 py-2 rounded-xl border border-[#0C6075]/20 dark:border-[#0C6075]/30 shadow-sm">
               <div className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <TrendingUp className="w-4 h-4 text-[#0C6075]" />
+                <span className="text-sm font-medium text-[#0C6075] dark:text-[#0C6075]">
                   Progress
                 </span>
               </div>
               <div className="w-20">
-                <Progress value={overallProgress} className="h-2" />
+                <Progress value={overallProgress} className="h-2 bg-[#0C6075]/20 dark:bg-[#0C6075]/30" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-[#0C6075] font-medium">
                 {overallProgress}%
               </span>
             </div>
@@ -185,61 +189,65 @@ export function Navigation() {
             {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
+                  <Avatar className="h-8 w-8 border-2 border-[#0C6075]/20 dark:border-[#0C6075]/30">
                     <AvatarImage src={session.user.image || undefined} alt={session.user.name || 'User'} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-[#0C6075]/10 dark:bg-[#0C6075]/20 text-[#0C6075]">
                       {session.user.name ? session.user.name.split(' ').map(n => n[0]).join('') : 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent 
+                className="w-56 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-slate-200 dark:border-slate-800" 
+                align="end" 
+                forceMount
+              >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                    <p className="text-sm font-medium leading-none text-slate-900 dark:text-slate-100">
                       {session.user.name || 'User'}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="text-xs leading-none text-[#0C6075] dark:text-[#0C6075]">
                       {session.user.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                <DropdownMenuItem asChild className="text-slate-700 dark:text-slate-300 hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
                   <Link href="/dashboard" className="flex items-center">
-                    <Home className="w-4 h-4 mr-2" />
+                    <Home className="w-4 h-4 mr-2 text-[#0C6075]" />
                     Dashboard
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="text-slate-700 dark:text-slate-300 hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
                   <Link href="/profile" className="flex items-center">
-                    <User className="w-4 h-4 mr-2" />
+                    <User className="w-4 h-4 mr-2 text-[#0C6075]" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="text-slate-700 dark:text-slate-300 hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
                   <Link href="/progress" className="flex items-center">
-                    <Target className="w-4 h-4 mr-2" />
+                    <Target className="w-4 h-4 mr-2 text-[#0C6075]" />
                     My Progress
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="text-slate-700 dark:text-slate-300 hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
                   <Link href="/achievements" className="flex items-center">
-                    <Trophy className="w-4 h-4 mr-2" />
+                    <Trophy className="w-4 h-4 mr-2 text-[#F8AD15]" />
                     Achievements
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                <DropdownMenuItem asChild className="text-slate-700 dark:text-slate-300 hover:bg-[#0C6075]/10 dark:hover:bg-[#0C6075]/20">
                   <Link href="/settings" className="flex items-center">
-                    <Settings className="w-4 h-4 mr-2" />
+                    <Settings className="w-4 h-4 mr-2 text-[#0C6075]" />
                     Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="flex items-center text-red-600 dark:text-red-400"
+                  className="flex items-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out

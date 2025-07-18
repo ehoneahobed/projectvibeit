@@ -1,8 +1,25 @@
-# Project Vibe It 🚀
+# Project Vibe It 🌱
 
-A modern, open-source learning platform inspired by The Odin Project, designed to teach web development with hands-on projects and a supportive community.
+A modern, **open-source** learning platform inspired by The Odin Project, designed to teach web development with hands-on projects and a supportive community. **Free forever, built by developers for developers.**
 
-## ✨ Features
+[![Open Source](https://img.shields.io/badge/Open%20Source-100%25-green?style=for-the-badge&logo=github)](https://github.com/your-username/projectvibeit)
+[![Contributors](https://img.shields.io/badge/Contributors-50+-blue?style=for-the-badge&logo=github)](https://github.com/your-username/projectvibeit/graphs/contributors)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+## 🎯 Mission
+
+We believe education should be accessible to everyone. That's why we're building the future of learning in the open - free forever, community-driven, and built by developers for developers.
+
+## ✨ Why Open Source Learning?
+
+- **🆓 Free Forever**: No hidden costs, no premium tiers
+- **🤝 Community Driven**: Built by developers, for developers
+- **⚡ Always Up-to-Date**: Learn the latest technologies as they emerge
+- **🎯 Real Projects**: Build portfolio-worthy projects
+- **🔗 GitHub Integration**: Submit projects directly from your repositories
+- **📚 Modern Curriculum**: Comprehensive learning paths from beginner to advanced
+
+## 🚀 Features
 
 - **Structured Learning Paths**: Carefully crafted curriculum from beginner to advanced
 - **Interactive Lessons**: MDX-based content with embedded resources and syntax highlighting
@@ -34,10 +51,10 @@ A modern, open-source learning platform inspired by The Odin Project, designed t
 
 ### Installation
 
-1. **Clone the repository**
+1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/yourusername/project-vibe-it.git
-   cd project-vibe-it
+   git clone https://github.com/your-username/projectvibeit.git
+   cd projectvibeit
    ```
 
 2. **Install dependencies**
@@ -101,7 +118,7 @@ A modern, open-source learning platform inspired by The Odin Project, designed t
 ## 🏗️ Project Structure
 
 ```
-project-vibe-it/
+projectvibeit/
 ├── src/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── api/               # API routes
@@ -118,6 +135,7 @@ project-vibe-it/
 │   │   ├── auth/             # Authentication configuration
 │   │   └── ...
 │   └── providers/             # React context providers
+├── content/                   # Course content (MDX files)
 ├── scripts/                   # Database seeding and utilities
 ├── public/                    # Static assets
 └── docs/                      # Documentation
@@ -151,6 +169,7 @@ The platform uses a modern design system built with:
 - **shadcn/ui**: High-quality React components
 - **Lucide Icons**: Beautiful, customizable icons
 - **Custom Components**: Platform-specific UI elements
+- **Green Color Palette**: Modern, accessible color scheme
 
 ## 🔧 Development
 
@@ -180,96 +199,50 @@ pnpm run create-contributor # Create a contributor user
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how you can help:
+We welcome contributions from developers, designers, and content creators! Here's how you can help:
 
-### Contributing Guidelines
+### Ways to Contribute
+
+- **🐛 Bug Reports**: Help us identify and fix issues
+- **💡 Feature Requests**: Suggest new features and improvements
+- **📝 Content**: Improve lessons, add examples, fix typos
+- **💻 Code**: Fix bugs, add features, improve performance
+- **🎨 Design**: Enhance UI/UX, improve accessibility
+- **📚 Documentation**: Update docs, add guides, improve clarity
+
+### Quick Start for Contributors
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes**: Follow the coding standards
+3. **Make your changes**: Follow our [style guidelines](./docs/contributing.md#style-guidelines)
 4. **Test your changes**: Ensure everything works correctly
-5. **Commit your changes**: Use conventional commit messages
+5. **Commit your changes**: Use [conventional commit messages](./docs/contributing.md#pr-title-format)
 6. **Push to the branch**: `git push origin feature/amazing-feature`
 7. **Open a Pull Request**: Describe your changes clearly
 
-### Areas to Contribute
+### Areas That Need Help
 
-- **Content**: Add new lessons, courses, or improve existing content using MDX
-- **Features**: Implement new platform features
-- **UI/UX**: Improve the user interface and experience
-- **Bug Fixes**: Fix issues and improve stability
-- **Documentation**: Improve documentation and guides
+**High Priority:**
+- Content review and improvements
+- Accessibility enhancements
+- Performance optimizations
+- Mobile responsiveness
+- Error handling improvements
 
-### Content Contribution
+**Medium Priority:**
+- Additional course content
+- UI/UX improvements
+- Testing coverage
+- Documentation updates
+- Internationalization
 
-Our platform uses a **file-based content system** that makes it easy to add new courses, modules, and lessons. The system automatically loads MDX content with rich features like syntax highlighting, resources, and assignments.
+See our [Contributing Guide](./docs/contributing.md) for detailed information.
 
-#### Quick Start
-- **New Lesson**: Create an `.mdx` file with frontmatter metadata
-- **New Module**: Add directory structure and update course metadata
-- **New Course**: Create course directory with `meta.json` file
+## 🌟 Community
 
-#### Documentation
-- 📖 [Content Contribution Guide](./docs/content-contribution.md) - Complete guide for contributors
-- ⚡ [Quick Start Guide](./docs/quick-start-guide.md) - Get started in minutes
-- 🚀 [Contributor Quick Start](./docs/contributor-quick-start.md) - Guide for new contributors
-- 📝 [Lesson Template](./docs/lesson-template.mdx) - Copy-paste template for new lessons
-
-#### Content Features
-- **MDX Support**: Write content with Markdown + React components
-- **Syntax Highlighting**: Automatic code highlighting with copy functionality
-- **Resource Cards**: Embed articles, videos, tools, and documentation
-- **Assignment System**: Structured assignments with starter code
-- **Order Management**: Automatic navigation based on metadata
-- **Version Control**: All content is tracked in Git
-
-#### Example: Adding a Lesson
-```bash
-# 1. Create lesson file
-touch content/courses/fundamentals-of-vibe-coding/modules/html-fundamentals/lessons/my-new-lesson.mdx
-
-# 2. Add content with frontmatter
----
-title: "My New Lesson"
-description: "Learn something amazing"
-type: "lesson"
-order: 1
----
-
-# My New Lesson
-Your content here...
-
-# 3. Update course metadata
-# 4. Test with pnpm dev
-# 5. Submit PR
-```
-
-See our [Content Contribution Guide](./docs/content-contribution.md) for detailed instructions.
-
-## 📖 Documentation
-
-- [Setup Guide](./docs/setup.md) - Detailed setup instructions
-- [Contributing Guide](./docs/contributing.md) - How to contribute
-- [Content Guidelines](./docs/content.md) - Writing lesson content
-- [API Documentation](./docs/api.md) - API endpoints reference
-- [Roles & Permissions](./docs/roles-and-permissions.md) - User roles and access control
-- [Admin Role Management](./docs/admin-role-management.md) - Guide for managing user roles
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-1. **Connect your repository** to Vercel
-2. **Set environment variables** in Vercel dashboard
-3. **Deploy automatically** on every push to main
-
-### Other Platforms
-
-The platform can be deployed to any platform that supports Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
+- **Discord**: [Join our community](https://discord.gg/your-discord)
+- **GitHub Discussions**: [Start a discussion](https://github.com/your-username/projectvibeit/discussions)
+- **Issues**: [Report bugs or request features](https://github.com/your-username/projectvibeit/issues)
 
 ## 📄 License
 
@@ -277,21 +250,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **The Odin Project** - Inspiration for the learning platform concept
-- **shadcn/ui** - Beautiful component library
-- **Next.js Team** - Amazing React framework
-- **Vercel** - Excellent hosting and deployment platform
-
-## 📞 Support
-
-- **Discord**: Join our community server
-- **GitHub Issues**: Report bugs and request features
-- **Email**: support@projectvibeit.com
-
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/project-vibe-it&type=Date)](https://star-history.com/#yourusername/project-vibe-it&Date)
+- Inspired by [The Odin Project](https://www.theodinproject.com/)
+- Built with [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), and [Tailwind CSS](https://tailwindcss.com/)
+- Icons by [Lucide](https://lucide.dev/)
+- Components by [shadcn/ui](https://ui.shadcn.com/)
 
 ---
 
-**Built with ❤️ by the Project Vibe It community**
+**Built with ❤️ by the open source community**
+
+[![GitHub stars](https://img.shields.io/github/stars/your-username/projectvibeit?style=social)](https://github.com/your-username/projectvibeit)
+[![GitHub forks](https://img.shields.io/github/forks/your-username/projectvibeit?style=social)](https://github.com/your-username/projectvibeit)
+[![GitHub issues](https://img.shields.io/github/issues/your-username/projectvibeit)](https://github.com/your-username/projectvibeit/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/your-username/projectvibeit)](https://github.com/your-username/projectvibeit/pulls)
