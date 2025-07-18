@@ -15,6 +15,7 @@ import { CodeBlockWithCopy } from './code-block-with-copy'
 import { LessonQuiz, LegacyQuizQuestion, LegacyQuizOption } from './lesson-quiz'
 import { LearningObjectives, LearningObjective } from './learning-objectives'
 import { ProjectSection } from './project-section'
+import { VideoPlayer } from './ui/video-player'
 
 interface MDXComponentProps {
   children?: React.ReactNode | string
@@ -221,6 +222,7 @@ const components = {
   h2: CustomH2,
   ResourceCard,
   AssignmentCard,
+  VideoPlayer,
   LessonQuiz,
   QuizQuestion: LegacyQuizQuestion,
   QuizOption: LegacyQuizOption,
