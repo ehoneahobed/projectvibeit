@@ -49,7 +49,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   // Get user progress
   const progressResult = await getUserProgress()
-  const userProgress = progressResult.success ? progressResult.data : []
+  const userProgress = progressResult.success ? progressResult.data || [] : []
   
   const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
   const completedLessons = getCompletedLessonsCount(userProgress, course.slug)
