@@ -1,0 +1,612 @@
+---
+title: "HTML Structure and Content"
+description: "Build semantic HTML structure, implement navigation, and add SEO-optimized content"
+type: "project"
+order: 4
+duration: "4 hours"
+---
+
+# Day 3: HTML Structure and Content
+
+Today we'll build the foundation of your website with semantic HTML. We'll create the structure, implement navigation, add content sections, and include all the SEO elements that will help search engines understand and rank your site.
+
+## Step 1: Basic HTML Template
+
+### HTML5 Document Structure
+
+Start with a proper HTML5 template:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Business Name - Tagline</title>
+    <meta name="description" content="Your business description for search engines">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="your, keywords, here">
+    <meta name="author" content="Your Business Name">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Your Business Name - Tagline">
+    <meta property="og:description" content="Your business description">
+    <meta property="og:image" content="https://yoursite.com/images/og-image.jpg">
+    <meta property="og:url" content="https://yoursite.com">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Your Business Name - Tagline">
+    <meta name="twitter:description" content="Your business description">
+    <meta name="twitter:image" content="https://yoursite.com/images/twitter-image.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Your+Font:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <!-- Navigation content -->
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Page content -->
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <!-- Footer content -->
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
+</body>
+</html>
+```
+
+### AI Collaboration: HTML Template
+
+```
+"Create an HTML5 template for my [business type] website:
+Business: [your business name]
+Description: [brief business description]
+Keywords: [relevant keywords]
+
+Please provide:
+- Complete HTML5 document structure
+- SEO meta tags (title, description, keywords)
+- Open Graph tags for social sharing
+- Twitter Card tags
+- Google Fonts integration
+- Proper semantic structure"
+```
+
+## Step 2: Navigation Structure
+
+### Semantic Navigation
+
+Create accessible navigation with proper semantic HTML:
+
+```html
+<header class="header">
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+            <a href="/" aria-label="Go to homepage">
+                <img src="/images/logo.png" alt="Your Business Name" class="logo-img">
+                <span class="logo-text">Your Business Name</span>
+            </a>
+        </div>
+        
+        <!-- Desktop Navigation -->
+        <nav class="nav-desktop" role="navigation" aria-label="Main navigation">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/services" class="nav-link">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false">
+            <span class="hamburger"></span>
+        </button>
+    </div>
+    
+    <!-- Mobile Navigation -->
+    <nav class="nav-mobile" role="navigation" aria-label="Mobile navigation" hidden>
+        <ul class="nav-mobile-list">
+            <li class="nav-mobile-item">
+                <a href="/" class="nav-mobile-link">Home</a>
+            </li>
+            <li class="nav-mobile-item">
+                <a href="/about" class="nav-mobile-link">About</a>
+            </li>
+            <li class="nav-mobile-item">
+                <a href="/services" class="nav-mobile-link">Services</a>
+            </li>
+            <li class="nav-mobile-item">
+                <a href="/contact" class="nav-mobile-link">Contact</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+```
+
+### Navigation Best Practices
+
+1. **Semantic Structure**: Use `<nav>` element with proper ARIA labels
+2. **Accessibility**: Include `aria-label` and `aria-expanded` attributes
+3. **Mobile-First**: Design mobile navigation first, then enhance for desktop
+4. **Skip Links**: Add skip navigation for keyboard users
+
+### AI Collaboration: Navigation Structure
+
+```
+"Create navigation structure for my [business type] website:
+Business: [your business name]
+Pages: [list of pages]
+Brand personality: [professional/friendly/etc.]
+
+Please provide:
+- Semantic HTML navigation structure
+- Mobile and desktop navigation patterns
+- Accessibility attributes and ARIA labels
+- Logo and branding integration
+- Call-to-action placement in navigation"
+```
+
+## Step 3: Hero Section
+
+### Compelling Hero Structure
+
+Create an engaging hero section that captures attention:
+
+```html
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Your Compelling Headline</h1>
+            <p class="hero-subtitle">A clear, benefit-focused subheadline that explains what you do and why it matters to your customers.</p>
+            <div class="hero-actions">
+                <a href="/contact" class="btn btn-primary">Get Started</a>
+                <a href="/about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="/images/hero.jpg" alt="Description of hero image" class="hero-img">
+        </div>
+    </div>
+</section>
+```
+
+### Hero Section Best Practices
+
+1. **Clear Value Proposition**: What problem do you solve?
+2. **Compelling Headline**: Use action words and benefits
+3. **Supporting Subtitle**: Explain the benefit clearly
+4. **Strong Call-to-Action**: Make it easy to take the next step
+5. **Visual Element**: High-quality image that supports the message
+
+### AI Collaboration: Hero Content
+
+```
+"Create hero section content for my [business type] website:
+Business: [your business name]
+Target audience: [description]
+Key benefit: [main value proposition]
+
+Please provide:
+- Compelling headline options
+- Supporting subtitle text
+- Call-to-action button text
+- Hero image suggestions
+- Value proposition messaging"
+```
+
+## Step 4: Services/Features Section
+
+### Services Grid Structure
+
+Showcase your services or features in an organized grid:
+
+```html
+<section class="services" id="services">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Our Services</h2>
+            <p class="section-subtitle">We provide comprehensive solutions to meet your needs</p>
+        </div>
+        
+        <div class="services-grid">
+            <article class="service-card">
+                <div class="service-icon">
+                    <img src="/images/service-1-icon.svg" alt="" aria-hidden="true">
+                </div>
+                <h3 class="service-title">Service One</h3>
+                <p class="service-description">Clear description of what this service provides and how it benefits customers.</p>
+                <a href="/services#service-one" class="service-link">Learn More →</a>
+            </article>
+            
+            <article class="service-card">
+                <div class="service-icon">
+                    <img src="/images/service-2-icon.svg" alt="" aria-hidden="true">
+                </div>
+                <h3 class="service-title">Service Two</h3>
+                <p class="service-description">Clear description of what this service provides and how it benefits customers.</p>
+                <a href="/services#service-two" class="service-link">Learn More →</a>
+            </article>
+            
+            <article class="service-card">
+                <div class="service-icon">
+                    <img src="/images/service-3-icon.svg" alt="" aria-hidden="true">
+                </div>
+                <h3 class="service-title">Service Three</h3>
+                <p class="service-description">Clear description of what this service provides and how it benefits customers.</p>
+                <a href="/services#service-three" class="service-link">Learn More →</a>
+            </article>
+        </div>
+    </div>
+</section>
+```
+
+### Service Card Best Practices
+
+1. **Clear Titles**: Use descriptive, benefit-focused titles
+2. **Benefit Descriptions**: Focus on what customers get, not just what you do
+3. **Visual Icons**: Use relevant icons to make services more memorable
+4. **Call-to-Action**: Include links to learn more about each service
+
+### AI Collaboration: Services Content
+
+```
+"Create services section content for my [business type] website:
+Business: [your business name]
+Services: [list of 3-4 main services]
+Target audience: [description]
+
+Please provide:
+- Service titles and descriptions
+- Benefit-focused messaging
+- Icon suggestions for each service
+- Call-to-action text for each service
+- Section header content"
+```
+
+## Step 5: About Section
+
+### About Section Structure
+
+Build trust and connection with your audience:
+
+```html
+<section class="about" id="about">
+    <div class="container">
+        <div class="about-content">
+            <div class="about-text">
+                <h2 class="section-title">About Us</h2>
+                <p class="about-intro">Brief introduction that captures your story and mission.</p>
+                <p class="about-description">More detailed description of your business, values, and what makes you unique. Focus on the benefits you provide to customers and why they should choose you.</p>
+                
+                <div class="about-features">
+                    <div class="feature">
+                        <h3 class="feature-title">Our Mission</h3>
+                        <p class="feature-text">Clear statement of what you're trying to achieve.</p>
+                    </div>
+                    <div class="feature">
+                        <h3 class="feature-title">Our Values</h3>
+                        <p class="feature-text">Key values that guide your business decisions.</p>
+                    </div>
+                    <div class="feature">
+                        <h3 class="feature-title">Our Approach</h3>
+                        <p class="feature-text">How you work and what makes your process special.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="about-image">
+                <img src="/images/about.jpg" alt="Description of about image" class="about-img">
+            </div>
+        </div>
+    </div>
+</section>
+```
+
+### About Section Best Practices
+
+1. **Story-Focused**: Tell your business story, not just facts
+2. **Value-Driven**: Emphasize your values and mission
+3. **Customer-Centric**: Focus on benefits to customers
+4. **Authentic**: Be genuine and relatable
+5. **Visual Support**: Include relevant images
+
+### AI Collaboration: About Content
+
+```
+"Create about section content for my [business type] website:
+Business: [your business name]
+Story: [brief business story]
+Values: [key business values]
+Mission: [business mission]
+
+Please provide:
+- About section introduction
+- Detailed business description
+- Mission statement
+- Key values and features
+- About image suggestions"
+```
+
+## Step 6: Contact Section
+
+### Contact Form Structure
+
+Make it easy for customers to get in touch:
+
+```html
+<section class="contact" id="contact">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-subtitle">Ready to work together? Let's start a conversation.</p>
+        </div>
+        
+        <div class="contact-content">
+            <div class="contact-info">
+                <h3 class="contact-title">Contact Information</h3>
+                <div class="contact-item">
+                    <span class="contact-icon">📍</span>
+                    <div class="contact-details">
+                        <h4 class="contact-label">Address</h4>
+                        <p class="contact-text">123 Business Street<br>City, State 12345</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">📞</span>
+                    <div class="contact-details">
+                        <h4 class="contact-label">Phone</h4>
+                        <p class="contact-text">
+                            <a href="tel:+1234567890">(123) 456-7890</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon">✉️</span>
+                    <div class="contact-details">
+                        <h4 class="contact-label">Email</h4>
+                        <p class="contact-text">
+                            <a href="mailto:hello@yourbusiness.com">hello@yourbusiness.com</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <form class="contact-form" action="https://formspree.io/f/your-form-id" method="POST">
+                <div class="form-group">
+                    <label for="name" class="form-label">Name *</label>
+                    <input type="text" id="name" name="name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject" class="form-label">Subject</label>
+                    <input type="text" id="subject" name="subject" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="message" class="form-label">Message *</label>
+                    <textarea id="message" name="message" class="form-textarea" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </div>
+</section>
+```
+
+### Contact Form Best Practices
+
+1. **Simple and Clear**: Keep forms short and easy to understand
+2. **Required Fields**: Only mark essential fields as required
+3. **Proper Labels**: Use descriptive labels for all form fields
+4. **Form Handling**: Use reliable form services like Formspree or Netlify Forms
+5. **Contact Information**: Provide multiple ways to get in touch
+
+### AI Collaboration: Contact Content
+
+```
+"Create contact section content for my [business type] website:
+Business: [your business name]
+Contact info: [address, phone, email]
+Form purpose: [what customers typically ask about]
+
+Please provide:
+- Contact section header content
+- Contact information layout
+- Contact form fields and labels
+- Form submission handling setup
+- Contact image or icon suggestions"
+```
+
+## Step 7: Footer Structure
+
+### Comprehensive Footer
+
+Complete your website with a professional footer:
+
+```html
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <img src="/images/logo.png" alt="Your Business Name" class="footer-logo-img">
+                    <span class="footer-logo-text">Your Business Name</span>
+                </div>
+                <p class="footer-description">Brief description of your business and what you do for customers.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">
+                        <span class="social-icon">📘</span>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <span class="social-icon">📷</span>
+                    </a>
+                    <a href="#" class="social-link" aria-label="LinkedIn">
+                        <span class="social-icon">💼</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="/" class="footer-link">Home</a></li>
+                    <li><a href="/about" class="footer-link">About</a></li>
+                    <li><a href="/services" class="footer-link">Services</a></li>
+                    <li><a href="/contact" class="footer-link">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Services</h3>
+                <ul class="footer-links">
+                    <li><a href="/services#service-one" class="footer-link">Service One</a></li>
+                    <li><a href="/services#service-two" class="footer-link">Service Two</a></li>
+                    <li><a href="/services#service-three" class="footer-link">Service Three</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Contact Info</h3>
+                <div class="footer-contact">
+                    <p>📍 123 Business Street<br>City, State 12345</p>
+                    <p>📞 <a href="tel:+1234567890">(123) 456-7890</a></p>
+                    <p>✉️ <a href="mailto:hello@yourbusiness.com">hello@yourbusiness.com</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p class="footer-copyright">&copy; 2024 Your Business Name. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="/privacy" class="footer-link">Privacy Policy</a>
+                <a href="/terms" class="footer-link">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+```
+
+### Footer Best Practices
+
+1. **Organized Information**: Group related links and information
+2. **Contact Details**: Include essential contact information
+3. **Social Links**: Connect to your social media presence
+4. **Legal Links**: Include privacy policy and terms of service
+5. **Copyright**: Protect your content with proper copyright notice
+
+## Step 8: SEO and Accessibility
+
+### Structured Data (JSON-LD)
+
+Add structured data to help search engines understand your content:
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Your Business Name",
+  "description": "Your business description",
+  "url": "https://yoursite.com",
+  "telephone": "+1234567890",
+  "email": "hello@yourbusiness.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "123 Business Street",
+    "addressLocality": "City",
+    "addressRegion": "State",
+    "postalCode": "12345",
+    "addressCountry": "US"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "YOUR_LATITUDE",
+    "longitude": "YOUR_LONGITUDE"
+  },
+  "openingHours": "Mo-Fr 09:00-17:00",
+  "sameAs": [
+    "https://facebook.com/yourbusiness",
+    "https://instagram.com/yourbusiness",
+    "https://linkedin.com/company/yourbusiness"
+  ]
+}
+</script>
+```
+
+### Accessibility Improvements
+
+1. **Alt Text**: Add descriptive alt text to all images
+2. **ARIA Labels**: Use ARIA labels for better screen reader support
+3. **Semantic HTML**: Use proper HTML5 semantic elements
+4. **Keyboard Navigation**: Ensure all interactive elements are keyboard accessible
+5. **Color Contrast**: Maintain sufficient color contrast ratios
+
+### AI Collaboration: SEO Optimization
+
+```
+"Optimize my [business type] website for SEO:
+Business: [your business name]
+Location: [city, state]
+Services: [list of services]
+
+Please provide:
+- Structured data (JSON-LD) markup
+- Meta tag optimization
+- Alt text suggestions for images
+- Internal linking strategy
+- Local SEO recommendations"
+```
+
+## Success Criteria for Day 3
+
+✅ **Complete HTML structure** with semantic elements  
+✅ **Navigation implemented** for mobile and desktop  
+✅ **Hero section created** with compelling content  
+✅ **Services section built** with clear descriptions  
+✅ **About section added** with business story  
+✅ **Contact form implemented** with proper structure  
+✅ **Footer created** with organized information  
+✅ **SEO elements added** including meta tags and structured data  
+✅ **Accessibility features** implemented throughout  
+
+## Next Steps
+
+Tomorrow we'll focus on **CSS Styling and Responsive Design** where you'll:
+- Implement your design system with CSS
+- Create responsive layouts using Grid and Flexbox
+- Add animations and transitions
+- Ensure accessibility with proper styling
+
+Your HTML foundation is now complete! This semantic structure will make styling much easier and provide excellent SEO and accessibility benefits. 

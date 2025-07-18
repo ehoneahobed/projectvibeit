@@ -154,16 +154,59 @@
       ]
     },
     {
+      "title": "Project 1: Static Website",
+      "slug": "project-1-static-website",
+      "description": "Build a professional business website with responsive design and SEO optimization",
+      "lessons": [
+        {
+          "title": "Project Overview",
+          "slug": "01-project-overview",
+          "description": "Introduction to building a professional business website with responsive design and SEO optimization",
+          "duration": "30 minutes"
+        },
+        {
+          "title": "Project Planning",
+          "slug": "02-project-planning",
+          "description": "Choose your business concept, plan content structure, and set up your development environment",
+          "duration": "2 hours"
+        },
+        {
+          "title": "Design and Wireframing",
+          "slug": "03-design-and-wireframing",
+          "description": "Create wireframes, design system, and plan your website's visual structure",
+          "duration": "3 hours"
+        },
+        {
+          "title": "HTML Structure and Content",
+          "slug": "04-html-structure",
+          "description": "Build semantic HTML structure, implement navigation, and add SEO-optimized content",
+          "duration": "4 hours"
+        },
+        {
+          "title": "CSS Styling and Responsive Design",
+          "slug": "05-css-styling",
+          "description": "Implement your design system with CSS, create responsive layouts, and add modern styling",
+          "duration": "5 hours"
+        },
+        {
+          "title": "JavaScript Functionality and Forms",
+          "slug": "06-javascript-functionality",
+          "description": "Add form validation, mobile navigation, smooth scrolling, and interactive elements",
+          "duration": "4 hours"
+        },
+        {
+          "title": "Performance and Deployment",
+          "slug": "07-performance-and-deployment",
+          "description": "Optimize performance, implement SEO best practices, test thoroughly, and deploy your website",
+          "duration": "6 hours"
+        }
+      ]
+    },
+    {
       "title": "Project Portfolio Development",
       "slug": "project-portfolio-development",
       "description": "Apply all your learning by building real-world projects with AI assistance",
       "lessons": [
-        {
-          "title": "Project 1: Static Website",
-          "slug": "project-1-static-website",
-          "description": "Build a professional business website with responsive design and SEO optimization",
-          "duration": "1 week"
-        },
         {
           "title": "Project 2: Interactive Web App",
           "slug": "project-2-interactive-web-app",

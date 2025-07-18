@@ -24,6 +24,20 @@ export const metadata: Metadata = {
   title: "Learn AI-Assisted Coding | Free Online Learning Platform",
   description: "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools. Start your coding journey today - completely free.",
   keywords: [
+    "Project Vibe It",
+    "VibeIt",
+    "Vibe Coding",
+    "Vibe It",
+    "VibeIt Platform",
+    "VibeIt Learning Platform",
+    "VibeIt Learning",
+    "Vibe coding",
+    "Vibe coding platform",
+    "Vibe coding learning platform",
+    "Vibe coding learning",
+    "Vibe coding course",
+    "Vibe coding courses",
+    "Vibe coding lessons",
     "free coding course",
     "AI coding bootcamp",
     "web development tutorial",
@@ -76,10 +90,10 @@ const structuredData = {
   "name": "VibeIt",
   "alternateName": "VibeIt Learning Platform",
   "description": "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools.",
-  "url": "https://vibeit.com",
-  "logo": "https://vibeit.com/logo.png",
+  "url": "https://projectvibeit.com",
+  "logo": "https://projectvibeit.com/logo.png",
   "sameAs": [
-    "https://github.com/your-username/projectvibeit"
+    "https://github.com/ehoneahobed/projectvibeit"
   ],
   "foundingDate": "2024",
   "address": {
@@ -128,7 +142,7 @@ const structuredData = {
     "@type": "SearchAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": "https://vibeit.com/courses?search={search_term_string}"
+      "urlTemplate": "https://projectvibeit.com/courses?search={search_term_string}"
     },
     "query-input": "required name=search_term_string"
   }
@@ -151,7 +165,7 @@ export default function Home() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-foreground">VibeIt</span>
+              <span className="text-xl font-semibold text-foreground">Project Vibe It</span>
             </div>
             <ThemeToggle />
           </div>
@@ -193,7 +207,7 @@ export default function Home() {
               size="lg"
               className="border-border text-foreground hover:bg-accent hover:text-accent-foreground px-8 py-4 text-lg font-medium rounded-lg transition-colors"
             >
-              <Link href="https://github.com/your-username/projectvibeit" target="_blank" rel="noopener noreferrer" className="flex items-center">
+              <Link href="https://github.com/ehoneahobed/projectvibeit" target="_blank" rel="noopener noreferrer" className="flex items-center">
                 <Github className="mr-2 w-5 h-5" />
                 View on GitHub
               </Link>
