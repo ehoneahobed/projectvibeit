@@ -1,4 +1,6 @@
 import Link from "next/link"
+import type { Metadata } from "next"
+import Script from "next/script"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,9 +20,129 @@ import {
   Play
 } from "lucide-react"
 
+export const metadata: Metadata = {
+  title: "Learn AI-Assisted Coding | Free Online Learning Platform",
+  description: "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools. Start your coding journey today - completely free.",
+  keywords: [
+    "free coding course",
+    "AI coding bootcamp",
+    "web development tutorial",
+    "React course",
+    "Next.js tutorial",
+    "JavaScript learning",
+    "TypeScript course",
+    "AI-assisted programming",
+    "coding for beginners",
+    "software development course",
+    "full-stack development",
+    "programming tutorial",
+    "learn to code",
+    "coding education",
+    "AI tools for developers"
+  ],
+  openGraph: {
+    title: "Learn AI-Assisted Coding | Free Online Learning Platform",
+    description: "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools. Start your coding journey today - completely free.",
+    url: "https://vibeit.com",
+    siteName: "VibeIt",
+    images: [
+      {
+        url: "/og-home.png",
+        width: 1200,
+        height: 630,
+        alt: "VibeIt - Learn AI-Assisted Coding",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Learn AI-Assisted Coding | Free Online Learning Platform",
+    description: "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools. Start your coding journey today - completely free.",
+    images: ["/og-home.png"],
+  },
+  alternates: {
+    canonical: "https://vibeit.com",
+  },
+}
+
+/**
+ * Structured data for the VibeIt platform
+ */
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "VibeIt",
+  "alternateName": "VibeIt Learning Platform",
+  "description": "Master AI-assisted coding with step-by-step lessons and hands-on projects. Learn web development, React, Next.js, and build real-world applications with AI tools.",
+  "url": "https://vibeit.com",
+  "logo": "https://vibeit.com/logo.png",
+  "sameAs": [
+    "https://github.com/your-username/projectvibeit"
+  ],
+  "foundingDate": "2024",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "US"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "support@vibeit.com"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "VibeIt Courses",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Course",
+          "name": "Fundamentals of Vibe Coding",
+          "description": "Master the art of AI-assisted development and build modern web applications with confidence",
+          "provider": {
+            "@type": "Organization",
+            "name": "VibeIt"
+          },
+          "courseMode": "online",
+          "educationalLevel": "beginner",
+          "inLanguage": "en",
+          "isAccessibleForFree": true,
+          "timeRequired": "PT80H",
+          "teaches": [
+            "AI-assisted coding",
+            "Web development",
+            "React",
+            "Next.js",
+            "JavaScript",
+            "TypeScript",
+            "Full-stack development",
+            "SaaS development"
+          ]
+        }
+      }
+    ]
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://vibeit.com/courses?search={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-gray-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+    <>
+      <Script
+        id="structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-background via-gray-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -377,5 +499,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </>
   )
 }

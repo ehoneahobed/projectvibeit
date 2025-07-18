@@ -1,4 +1,6 @@
 import Link from "next/link"
+import type { Metadata } from "next"
+import Script from "next/script"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +33,148 @@ interface CoursePageProps {
   }>
 }
 
+/**
+ * Generates dynamic metadata for course pages
+ */
+export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
+  const { courseSlug } = await params
+  const course = getCourseBySlug(courseSlug)
+  
+  if (!course) {
+    return {
+      title: "Course Not Found",
+      description: "The requested course could not be found.",
+    }
+  }
+
+  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
+  const estimatedHours = course.estimatedHours || Math.round(totalLessons * 0.5)
+
+  return {
+    title: `${course.title} - Free Online Course`,
+    description: `${course.description} Learn with ${course.modules.length} modules, ${totalLessons} lessons, and ${estimatedHours} hours of content. Start learning for free today.`,
+    keywords: [
+      course.title.toLowerCase(),
+      "free coding course",
+      "online learning",
+      "web development",
+      "AI-assisted coding",
+      "programming tutorial",
+      "software development",
+      "React course",
+      "Next.js tutorial",
+      "JavaScript learning",
+      "TypeScript course",
+      "full-stack development",
+      "coding bootcamp",
+      "learn to code",
+      "programming education"
+    ],
+    openGraph: {
+      title: `${course.title} - Free Online Course`,
+      description: `${course.description} Learn with ${course.modules.length} modules, ${totalLessons} lessons, and ${estimatedHours} hours of content. Start learning for free today.`,
+      url: `https://vibeit.com/courses/${courseSlug}`,
+      siteName: "VibeIt",
+      images: [
+        {
+          url: `/og-course-${courseSlug}.png`,
+          width: 1200,
+          height: 630,
+          alt: `${course.title} - VibeIt Course`,
+        },
+      ],
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${course.title} - Free Online Course`,
+      description: `${course.description} Learn with ${course.modules.length} modules, ${totalLessons} lessons, and ${estimatedHours} hours of content. Start learning for free today.`,
+      images: [`/og-course-${courseSlug}.png`],
+    },
+    alternates: {
+      canonical: `https://vibeit.com/courses/${courseSlug}`,
+    },
+  }
+}
+
+/**
+ * Generates structured data for course pages
+ */
+function generateCourseStructuredData(course: NonNullable<ReturnType<typeof getCourseBySlug>>, courseSlug: string) {
+  const totalLessons = course.modules.reduce((acc: number, module) => acc + module.lessons.length, 0)
+  const estimatedHours = course.estimatedHours || Math.round(totalLessons * 0.5)
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": course.title,
+    "description": course.description,
+    "provider": {
+      "@type": "Organization",
+      "name": "VibeIt",
+      "url": "https://vibeit.com"
+    },
+    "courseMode": "online",
+    "educationalLevel": "beginner",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "timeRequired": `PT${estimatedHours}H`,
+    "teaches": [
+      "AI-assisted coding",
+      "Web development",
+      "React",
+      "Next.js",
+      "JavaScript",
+      "TypeScript",
+      "Full-stack development",
+      "SaaS development",
+      "Programming",
+      "Software development"
+    ],
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": "online",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "timeRequired": `PT${estimatedHours}H`,
+      "courseWorkload": `PT${estimatedHours}H`,
+      "numberOfCredits": totalLessons
+    },
+    "url": `https://vibeit.com/courses/${courseSlug}`,
+    "image": `https://vibeit.com/og-course-${courseSlug}.png`,
+    "author": {
+      "@type": "Organization",
+      "name": "VibeIt Team"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "VibeIt",
+      "url": "https://vibeit.com"
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": totalLessons,
+      "itemListElement": course.modules.map((module, moduleIndex: number) => ({
+        "@type": "ListItem",
+        "position": moduleIndex + 1,
+        "item": {
+          "@type": "Course",
+          "name": module.title,
+          "description": module.description,
+          "hasCourseInstance": {
+            "@type": "CourseInstance",
+            "courseMode": "online",
+            "inLanguage": "en",
+            "isAccessibleForFree": true,
+            "timeRequired": `PT${Math.round(module.lessons.length * 0.5)}H`
+          }
+        }
+      }))
+    }
+  }
+}
+
 export default async function CoursePage({ params }: CoursePageProps) {
   const { courseSlug } = await params
   
@@ -55,8 +199,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const completedLessons = getCompletedLessonsCount(userProgress, course.slug)
   const courseProgress = calculateCourseProgress(userProgress, course.slug, totalLessons)
 
+  const structuredData = generateCourseStructuredData(course, courseSlug)
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <>
+      <Script
+        id="course-structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Hero Section */}
       <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -249,5 +401,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </section>
     </div>
+    </>
   )
 } 

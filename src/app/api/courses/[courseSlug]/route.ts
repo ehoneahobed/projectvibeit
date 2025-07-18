@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
 import { Course } from "@/lib/models"
 
-interface CourseParams {
-  params: {
+type CourseParams = {
+  params: Promise<{
     courseSlug: string
-  }
+  }>
 }
 
 interface TransformedLesson {
@@ -77,8 +77,10 @@ export async function GET(request: NextRequest, { params }: CourseParams) {
   try {
     await connectDB()
     
+    const { courseSlug } = await params
+    
     const course = await Course.findOne({ 
-      slug: params.courseSlug,
+      slug: courseSlug,
       isPublished: true 
     })
     .populate({

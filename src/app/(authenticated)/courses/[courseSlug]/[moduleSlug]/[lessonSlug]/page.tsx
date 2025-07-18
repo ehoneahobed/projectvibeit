@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,10 +10,15 @@ import { FloatingCompletionButton } from "@/components/floating-completion-butto
 import { 
   getLessonContent, 
   getLessonNavigation,
+  getCourseBySlug
 } from "@/lib/content"
 import { auth } from "@/lib/auth/auth"
 import { getUserProgress } from "@/lib/progress-actions"
-import { isLessonCompleted, calculateCourseProgress, getCompletedLessonsCount } from "@/lib/progress"
+import { 
+  calculateCourseProgress, 
+  getCompletedLessonsCount, 
+  isLessonCompleted
+} from "@/lib/progress"
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -31,6 +37,78 @@ import {
   Trophy
 } from "lucide-react"
 import { notFound, redirect } from "next/navigation"
+
+/**
+ * Generates dynamic metadata for lesson pages
+ */
+export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
+  const { courseSlug, moduleSlug, lessonSlug } = await params
+  const course = getCourseBySlug(courseSlug)
+  
+  if (!course) {
+    return {
+      title: "Course Not Found",
+      description: "The requested course could not be found.",
+    }
+  }
+
+  const courseModule = course.modules.find(m => m.slug === moduleSlug)
+  const lesson = courseModule?.lessons.find(l => l.slug === lessonSlug)
+  
+  if (!courseModule || !lesson) {
+    return {
+      title: "Lesson Not Found",
+      description: "The requested lesson could not be found.",
+    }
+  }
+
+  const lessonNumber = courseModule.lessons.findIndex(l => l.slug === lessonSlug) + 1
+  const totalLessonsInModule = courseModule.lessons.length
+
+  return {
+    title: `${lesson.title} - ${courseModule.title} | ${course.title}`,
+    description: `${lesson.description} Part ${lessonNumber} of ${totalLessonsInModule} in the ${courseModule.title} module. Learn ${course.title} for free on VibeIt.`,
+    keywords: [
+      lesson.title.toLowerCase(),
+      courseModule.title.toLowerCase(),
+      course.title.toLowerCase(),
+      "free coding lesson",
+      "online programming tutorial",
+      "web development lesson",
+      "AI-assisted coding",
+      "programming education",
+      "coding tutorial",
+      "software development lesson",
+      "learn to code",
+      "programming course"
+    ],
+    openGraph: {
+      title: `${lesson.title} - ${courseModule.title} | ${course.title}`,
+      description: `${lesson.description} Part ${lessonNumber} of ${totalLessonsInModule} in the ${courseModule.title} module. Learn ${course.title} for free on VibeIt.`,
+      url: `https://vibeit.com/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`,
+      siteName: "VibeIt",
+      images: [
+        {
+          url: `/og-lesson-${courseSlug}-${moduleSlug}-${lessonSlug}.png`,
+          width: 1200,
+          height: 630,
+          alt: `${lesson.title} - VibeIt Lesson`,
+        },
+      ],
+      locale: "en_US",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${lesson.title} - ${courseModule.title} | ${course.title}`,
+      description: `${lesson.description} Part ${lessonNumber} of ${totalLessonsInModule} in the ${courseModule.title} module. Learn ${course.title} for free on VibeIt.`,
+      images: [`/og-lesson-${courseSlug}-${moduleSlug}-${lessonSlug}.png`],
+    },
+    alternates: {
+      canonical: `https://vibeit.com/courses/${courseSlug}/${moduleSlug}/${lessonSlug}`,
+    },
+  }
+}
 
 interface LessonPageProps {
   params: Promise<{

@@ -5,8 +5,8 @@
   "published": true,
   "modules": [
     {
-      "title": "The Vibe Coding Mindset",
-      "slug": "vibe-coding-mindset",
+      "title": "Introduction to Vibe Coding",
+      "slug": "introduction-to-vibe-coding",
       "description": "Understanding the philosophy and approach of Vibe Coding",
       "lessons": [
         {
